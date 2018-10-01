@@ -1,0 +1,5 @@
+STRINGTABLE Oc4dopenvdbmesher {
+	Oc4dopenvdbmesher "VDB Mesher";
+    C4DOPENVDB_MESHER_ADAPT "Adaptivity";
+    C4DOPENVDB_MESHER_ISO "Surface Iso";
+}

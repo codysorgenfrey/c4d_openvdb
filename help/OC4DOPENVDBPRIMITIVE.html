@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- UIkit CSS -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.12/css/uikit.min.css" />
+		
+		<link rel="stylesheet" href="./css/help.css" />
+
+		<!-- UIkit JS -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.12/js/uikit.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.12/js/uikit-icons.min.js"></script>
+		
+		<!-- JQuery -->
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+		
+		<script>
+			var curFile = "OC4DOPENVDBPRIMITIVE.html";
+		</script>
+		<script src="js/help.js"></script>
+		
+		<title></title>
+		<meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+	<body>
+		<div uk-grid>
+			<div id="nav" class="uk-background-muted" style="width: 255px;" uk-height-viewport="expand: true">
+				<div style="position: fixed;">
+			    	<ul class="uk-nav uk-nav-default uk-padding"></ul>
+				</div>
+			</div>
+			<div id="body" class="uk-padding uk-width-expand">
+				<div id="header" class="uk-margin-medium">
+					<h1 id="mainTitle"></h1>
+					<ul id="inpage" class="uk-subnav uk-subnav-divider" uk-margin></ul>
+				</div>
+				<div id="content" class="uk-margin-medium uk-child-width-1-1">
+					<div>
+						<div class="uk-card uk-card-body">
+							<h4 id="C4DOPENVDB_PRIM_SETTINGS_GROUP" class="section uk-card-title">Primitive Settings</h4>
+							<p>
+								<span id="C4DOPENVDB_PRIM_SETTINGS_TYPE">
+									<b>Primitive Type</b>
+									</br> 
+									The shape of the volume to generate.
+								</span>
+							</p>
+						</div>
+					</div>
+					<div>
+						<div class="uk-card uk-card-body">
+							<h4 id="C4DOPENVDB_SPHERE_SETTINGS_GROUP" class="section uk-card-title">Primitive Type Settings</h4>
+							<p>
+								<span id="C4DOPENVDB_SPHERE_SETTINGS_RADIUS"></span>
+								<span id="C4DOPENVDB_CUBE_SETTINGS_SIZE"></span>
+								<span id="C4DOPENVDB_DODEC_SETTINGS_SIZE"></span>
+								<span id="C4DOPENVDB_ICOS_SETTINGS_SIZE"></span>
+								<span id="C4DOPENVDB_OCT_SETTINGS_SIZE"></span>
+								<span id="C4DOPENVDB_TET_SETTINGS_SIZE"></span>
+								<b>Radius / Width</b>
+								</br> 
+								The radius or width of the selected object to be generated.
+							</p>
+						</div>
+					</div>
+					<div>
+						<div class="uk-card uk-card-body">
+							<h4 id="C4DOPENVDB_VDB_SETTINGS_GROUP" class="section uk-card-title">VDB Settings</h4>
+							<p>
+								<span id="C4DOPENVDB_VDB_SETTINGS_VOXEL_SIZE">
+									<b>Voxel Size</b>
+									</br>
+									The size of the voxels that make up the surface of the object. Lower values mean higher
+								</span>
+								</br></br>
+								<span id="C4DOPENVDB_VDB_SETTINGS_VDB_TYPE">
+									<b>VDB Type</b>
+									</br>
+									A <em>Signed Distance Field</em> is a VDB representation of a surface, where voxels at the surface are set to a value of 0, and voxels surrounding that surface carry values that represent their distance from the surface. Voxels on the inside of the surface have a negative value while voxels on the outside have a positive value. A <em>Fog Volume</em> stores the same surface data as a Signed Distance Field except all the values of the voxels inside the surface are set to 1.
+								</span>
+								</br></br>
+								<span id="C4DOPENVDB_VDB_SETTINGS_BAND_RADIUS">
+									<b>Narrow Band Diameter</b>
+									</br>
+									Defines how many voxels wide the narrow band expands past the surface. The default values of 3 is usually more than enough.
+								</span>
+								</br></br>
+								<span id="C4DOPENVDB_VDB_SETTINGS_FILL_INTERIOR">
+									<b>Fill Interior</b>
+									</br>
+									Instead of using a narrow band of values for the interior of the surface, this option fills all the voxels that make up the interior of the volume with values.
+								</span>
+								</br></br>
+								<span id="C4DOPENVDB_VDB_SETTINGS_UNSIGNED_DISTANCE_FIELD">
+									<b>Unsigned Distance Field</b>
+									</br>
+									The default SDF has positive values on the outside of the surface and negative values on the inside of the surface, this requires a surface to be air-tight. Use Unsigned Distance Field for surfaces that aren't air tight, thus making all the values positive.
+								</span>
+								</br></br>
+								<span id="C4DOPENVDB_GRID_NAME">
+									<b>Grid Name</b>
+									</br>
+									The name of the grid that is being generated.
+								</span>
+								</br></br>
+								<span id="C4DOPENVDB_GRID_TYPE">
+									<b>Grid Type</b>
+									</br>
+									The data type and grid class of the grid being generated.
+								</span>
+								</br></br>
+								<span id="C4DOPENVDB_SURFACE_COUNT">
+									<b>Surface Count</b>
+									</br>
+									This number represents how many voxels are being drawn in the viewport to represent the volume.
+								</span>
+								</br></br>
+								<span id="C4DOPENVDB_VOXEL_COUNT">
+									<b>Voxel Count</b>
+									</br>
+									This number represents the total active voxels in the grid.
+								</span>
+							</p>
+						</div>
+					</div>
+					<div>
+						<div class="uk-card uk-card-body">
+							<h4 id="C4DOPENVDB_DISPLAY_GROUP" class="section uk-card-title">Display Settings</h4>
+							<p>
+								<span id="C4DOPENVDB_DISPLAY_SHAPE">
+									<b>Display Shape</b>
+									</br>
+									The shape to draw each surface voxel as in the viewport. <em>Square</em> is the default and shows an accurate shaded version of the volume, it is also usually the fastest. <em>Dot</em> draws each voxel as a 1px dot with flat shading. <em>Box</em> is a 3D visualization of a voxel and it's size. <em>Box (Lines)</em> is the same a box but not filled in.
+								</span>
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

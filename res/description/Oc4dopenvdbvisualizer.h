@@ -1,0 +1,8 @@
+#pragma once
+enum {
+    Oc4dopenvdbvisualizer = 1041701,
+    C4DOPENVDB_VIS_OBJECT = 3000,
+    C4DOPENVDB_VIS_OFFSET = 3001,
+    C4DOPENVDB_VIS_COLOR  = 3002,
+    C4DOPENVDB_VIS_GROUP = 3003,
+};

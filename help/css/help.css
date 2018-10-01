@@ -1,0 +1,33 @@
+div :target {
+	-webkit-animation: target-fade 3s;
+	-moz-animation: target-fade 3s;
+	-o-animation: target-fade 3s;
+	animation: target-fade s;
+}
+
+
+/**
+ * Keyframe animation definition
+ * 
+ * 1. Insert a color of your choice here
+ */
+
+@-webkit-keyframes target-fade {
+	from { background-color: #d8eafc; color: #1e87f0; } /* [1] */
+	to { background-color: transparent; }
+}
+
+@-moz-keyframes target-fade {
+	from { background-color: #d8eafc; color: #1e87f0; } /* [1] */
+	to { background-color: transparent; }
+}
+
+@-o-keyframes target-fade {
+	from { background-color: #d8eafc; color: #1e87f0; } /* [1] */
+	to { background-color: transparent; }
+}
+
+@keyframes target-fade {
+	from { background-color: #d8eafc; color: #1e87f0; } /* [1] */
+	to { background-color: transparent; }
+}

@@ -1,0 +1,515 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		050A85272102C8C600A7008B /* C4DOpenVDBFunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 050A85252102C8C600A7008B /* C4DOpenVDBFunctions.cpp */; };
+		050A85282102C8C600A7008B /* C4DOpenVDBFunctions.h in Headers */ = {isa = PBXBuildFile; fileRef = 050A85262102C8C600A7008B /* C4DOpenVDBFunctions.h */; };
+		05113030214CDDD500C2C578 /* C4DOpenVDBGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0511302E214CDDD500C2C578 /* C4DOpenVDBGenerator.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
+		05113031214CDDD500C2C578 /* C4DOpenVDBGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 0511302F214CDDD500C2C578 /* C4DOpenVDBGenerator.h */; };
+		054816152121E5FF0008ABDE /* C4DOpenVDBPrimitive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 054816132121E5FF0008ABDE /* C4DOpenVDBPrimitive.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
+		054816162121E5FF0008ABDE /* C4DOpenVDBPrimitive.h in Headers */ = {isa = PBXBuildFile; fileRef = 054816142121E5FF0008ABDE /* C4DOpenVDBPrimitive.h */; };
+		057C079120FB2000006A8F41 /* C4DOpenVDBObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 057C079020FB2000006A8F41 /* C4DOpenVDBObject.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
+		059E91592137C4EF00472B23 /* C4DOpenVDBHelp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 059E91572137C4EF00472B23 /* C4DOpenVDBHelp.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
+		059E915A2137C4EF00472B23 /* C4DOpenVDBHelp.h in Headers */ = {isa = PBXBuildFile; fileRef = 059E91582137C4EF00472B23 /* C4DOpenVDBHelp.h */; };
+		059E915E213F5BE100472B23 /* C4DOpenVDBVisualizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 059E915C213F5BE100472B23 /* C4DOpenVDBVisualizer.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
+		059E915F213F5BE200472B23 /* C4DOpenVDBVisualizer.h in Headers */ = {isa = PBXBuildFile; fileRef = 059E915D213F5BE100472B23 /* C4DOpenVDBVisualizer.h */; };
+		05A4BDC621586A4F00BA66F9 /* C4DOpenVDBMesher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05A4BDC421586A4F00BA66F9 /* C4DOpenVDBMesher.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
+		05A4BDC721586A4F00BA66F9 /* C4DOpenVDBMesher.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A4BDC521586A4F00BA66F9 /* C4DOpenVDBMesher.h */; };
+		05A4BDCB2158B4E800BA66F9 /* C4DOpenVDBCombine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05A4BDC92158B4E800BA66F9 /* C4DOpenVDBCombine.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
+		05A4BDCC2158B4E800BA66F9 /* C4DOpenVDBCombine.h in Headers */ = {isa = PBXBuildFile; fileRef = 05A4BDCA2158B4E800BA66F9 /* C4DOpenVDBCombine.h */; };
+		A0A66833391837B5E7010000 /* main.h in Headers */ = {isa = PBXBuildFile; fileRef = A0A66833391837B5E7000000 /* main.h */; };
+		A0A6683339E921D362010000 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A0A6683339E921D362000000 /* main.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
+		A0A6683339F470FF41010000 /* libcinema.framework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A0A6683339F470FF41000000 /* libcinema.framework.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		28945ECC17E25C1A009BE29F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0A6683339F470FF41020000 /* cinema.framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A08C5CDEA3F470FF417B0100;
+			remoteInfo = "cinema.framework static library";
+		};
+		A0A6683339F470FF41040000 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0A6683339F470FF41020000 /* cinema.framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A08C5CDEA3F470FF417B0000;
+			remoteInfo = cinema.framework;
+		};
+		A0A6683339F470FF41050000 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0A6683339F470FF41020000 /* cinema.framework.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = A08C5CDEA3F470FF41000000;
+			remoteInfo = cinema.framework;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		050A85252102C8C600A7008B /* C4DOpenVDBFunctions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBFunctions.cpp; path = source/C4DOpenVDBFunctions.cpp; sourceTree = SOURCE_ROOT; };
+		050A85262102C8C600A7008B /* C4DOpenVDBFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBFunctions.h; path = source/C4DOpenVDBFunctions.h; sourceTree = SOURCE_ROOT; };
+		050A85292103024900A7008B /* C4DOpenVDBObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBObject.h; path = source/C4DOpenVDBObject.h; sourceTree = SOURCE_ROOT; };
+		0511302E214CDDD500C2C578 /* C4DOpenVDBGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBGenerator.cpp; path = ../C4DOpenVDB/source/C4DOpenVDBGenerator.cpp; sourceTree = "<group>"; };
+		0511302F214CDDD500C2C578 /* C4DOpenVDBGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBGenerator.h; path = source/C4DOpenVDBGenerator.h; sourceTree = "<group>"; };
+		054816132121E5FF0008ABDE /* C4DOpenVDBPrimitive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBPrimitive.cpp; path = source/C4DOpenVDBPrimitive.cpp; sourceTree = SOURCE_ROOT; };
+		054816142121E5FF0008ABDE /* C4DOpenVDBPrimitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBPrimitive.h; path = source/C4DOpenVDBPrimitive.h; sourceTree = SOURCE_ROOT; };
+		057C079020FB2000006A8F41 /* C4DOpenVDBObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBObject.cpp; path = source/C4DOpenVDBObject.cpp; sourceTree = SOURCE_ROOT; };
+		059E91572137C4EF00472B23 /* C4DOpenVDBHelp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBHelp.cpp; path = source/C4DOpenVDBHelp.cpp; sourceTree = SOURCE_ROOT; };
+		059E91582137C4EF00472B23 /* C4DOpenVDBHelp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBHelp.h; path = source/C4DOpenVDBHelp.h; sourceTree = SOURCE_ROOT; };
+		059E915C213F5BE100472B23 /* C4DOpenVDBVisualizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBVisualizer.cpp; path = source/C4DOpenVDBVisualizer.cpp; sourceTree = SOURCE_ROOT; };
+		059E915D213F5BE100472B23 /* C4DOpenVDBVisualizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBVisualizer.h; path = source/C4DOpenVDBVisualizer.h; sourceTree = SOURCE_ROOT; };
+		05A4BDC421586A4F00BA66F9 /* C4DOpenVDBMesher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBMesher.cpp; path = source/C4DOpenVDBMesher.cpp; sourceTree = SOURCE_ROOT; };
+		05A4BDC521586A4F00BA66F9 /* C4DOpenVDBMesher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBMesher.h; path = source/C4DOpenVDBMesher.h; sourceTree = SOURCE_ROOT; };
+		05A4BDC92158B4E800BA66F9 /* C4DOpenVDBCombine.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBCombine.cpp; path = source/C4DOpenVDBCombine.cpp; sourceTree = SOURCE_ROOT; };
+		05A4BDCA2158B4E800BA66F9 /* C4DOpenVDBCombine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBCombine.h; path = source/C4DOpenVDBCombine.h; sourceTree = SOURCE_ROOT; };
+		8ACD68381C66E7D100F34089 /* sanitizerbase.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = sanitizerbase.xcconfig; path = ../../frameworks/settings/sanitizerbase.xcconfig; sourceTree = "<group>"; };
+		A08C5CDEA3A66833397B0000 /* C4DOpenVDB.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = C4DOpenVDB.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		A0A668333900000000000000 /* debugbase.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = debugbase.xcconfig; path = ../../frameworks/settings/debugbase.xcconfig; sourceTree = SOURCE_ROOT; };
+		A0A668333900000000050000 /* releasebase.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = releasebase.xcconfig; path = ../../frameworks/settings/releasebase.xcconfig; sourceTree = SOURCE_ROOT; };
+		A0A66833391837B5E7000000 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = main.h; path = source/main.h; sourceTree = SOURCE_ROOT; };
+		A0A6683339E921D362000000 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = source/main.cpp; sourceTree = SOURCE_ROOT; };
+		A0A6683339F470FF41020000 /* cinema.framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = cinema.framework.xcodeproj; path = ../../frameworks/cinema.framework/project/cinema.framework.xcodeproj; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A0A6683339000000000F0000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A0A6683339F470FF41010000 /* libcinema.framework.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A0A668333900000000140000 /* libs */ = {
+			isa = PBXGroup;
+			children = (
+				A0A6683339F470FF41020000 /* cinema.framework.xcodeproj */,
+			);
+			name = libs;
+			sourceTree = "<group>";
+		};
+		A0A668333900000000190000 /* configurations */ = {
+			isa = PBXGroup;
+			children = (
+				8ACD68381C66E7D100F34089 /* sanitizerbase.xcconfig */,
+				A0A668333900000000000000 /* debugbase.xcconfig */,
+				A0A668333900000000050000 /* releasebase.xcconfig */,
+			);
+			name = configurations;
+			sourceTree = "<group>";
+		};
+		A0A6683339000000001E0000 = {
+			isa = PBXGroup;
+			children = (
+				A0A668333900000000190000 /* configurations */,
+				A0A668333900000000140000 /* libs */,
+				A0A668333900000000230000 /* products */,
+				A0A6683339CA90681B000000 /* source */,
+			);
+			sourceTree = "<group>";
+		};
+		A0A668333900000000230000 /* products */ = {
+			isa = PBXGroup;
+			children = (
+				A08C5CDEA3A66833397B0000 /* C4DOpenVDB.dylib */,
+			);
+			name = products;
+			sourceTree = "<group>";
+		};
+		A0A6683339CA90681B000000 /* source */ = {
+			isa = PBXGroup;
+			children = (
+				A0A66833391837B5E7000000 /* main.h */,
+				A0A6683339E921D362000000 /* main.cpp */,
+				050A85262102C8C600A7008B /* C4DOpenVDBFunctions.h */,
+				050A85252102C8C600A7008B /* C4DOpenVDBFunctions.cpp */,
+				0511302F214CDDD500C2C578 /* C4DOpenVDBGenerator.h */,
+				0511302E214CDDD500C2C578 /* C4DOpenVDBGenerator.cpp */,
+				050A85292103024900A7008B /* C4DOpenVDBObject.h */,
+				057C079020FB2000006A8F41 /* C4DOpenVDBObject.cpp */,
+				059E91582137C4EF00472B23 /* C4DOpenVDBHelp.h */,
+				059E91572137C4EF00472B23 /* C4DOpenVDBHelp.cpp */,
+				054816142121E5FF0008ABDE /* C4DOpenVDBPrimitive.h */,
+				054816132121E5FF0008ABDE /* C4DOpenVDBPrimitive.cpp */,
+				059E915D213F5BE100472B23 /* C4DOpenVDBVisualizer.h */,
+				059E915C213F5BE100472B23 /* C4DOpenVDBVisualizer.cpp */,
+				05A4BDC521586A4F00BA66F9 /* C4DOpenVDBMesher.h */,
+				05A4BDC421586A4F00BA66F9 /* C4DOpenVDBMesher.cpp */,
+				05A4BDCA2158B4E800BA66F9 /* C4DOpenVDBCombine.h */,
+				05A4BDC92158B4E800BA66F9 /* C4DOpenVDBCombine.cpp */,
+			);
+			name = source;
+			path = ../source;
+			sourceTree = SOURCE_ROOT;
+		};
+		A0A6683339F470FF41280000 /* products */ = {
+			isa = PBXGroup;
+			children = (
+				A0A6683339F470FF41000000 /* libcinema.framework.a */,
+				28945ECD17E25C1A009BE29F /* libcinema.framework_static.a */,
+			);
+			name = products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		A0A6683339000000002D0000 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				059E915F213F5BE200472B23 /* C4DOpenVDBVisualizer.h in Headers */,
+				05A4BDCC2158B4E800BA66F9 /* C4DOpenVDBCombine.h in Headers */,
+				A0A66833391837B5E7010000 /* main.h in Headers */,
+				05A4BDC721586A4F00BA66F9 /* C4DOpenVDBMesher.h in Headers */,
+				054816162121E5FF0008ABDE /* C4DOpenVDBPrimitive.h in Headers */,
+				059E915A2137C4EF00472B23 /* C4DOpenVDBHelp.h in Headers */,
+				050A85282102C8C600A7008B /* C4DOpenVDBFunctions.h in Headers */,
+				05113031214CDDD500C2C578 /* C4DOpenVDBGenerator.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		A08C5CDEA3A6683339000000 /* C4DOpenVDB */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A0A668333900000000460000 /* Build configuration list for PBXNativeTarget "C4DOpenVDB" */;
+			buildPhases = (
+				A0A668333900000000320000 /* Sources */,
+				A0A6683339000000000F0000 /* Frameworks */,
+				A0A6683339000000002D0000 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A0A6683339F470FF41370000 /* PBXTargetDependency */,
+			);
+			name = C4DOpenVDB;
+			productName = cinema4dsdk;
+			productReference = A08C5CDEA3A66833397B0000 /* C4DOpenVDB.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A0A6683339000000003C0000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0820;
+				ORGANIZATIONNAME = "MAXON Computer GmbH";
+			};
+			buildConfigurationList = A0A668333900000000410000 /* Build configuration list for PBXProject "C4DOpenVDB" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = A0A6683339000000001E0000;
+			productRefGroup = A0A668333900000000230000 /* products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = A0A6683339F470FF41280000 /* products */;
+					ProjectRef = A0A6683339F470FF41020000 /* cinema.framework.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				A08C5CDEA3A6683339000000 /* C4DOpenVDB */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		28945ECD17E25C1A009BE29F /* libcinema.framework_static.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libcinema.framework_static.a;
+			remoteRef = 28945ECC17E25C1A009BE29F /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A0A6683339F470FF41000000 /* libcinema.framework.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libcinema.framework.a;
+			remoteRef = A0A6683339F470FF41040000 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A0A668333900000000320000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				057C079120FB2000006A8F41 /* C4DOpenVDBObject.cpp in Sources */,
+				050A85272102C8C600A7008B /* C4DOpenVDBFunctions.cpp in Sources */,
+				05A4BDC621586A4F00BA66F9 /* C4DOpenVDBMesher.cpp in Sources */,
+				054816152121E5FF0008ABDE /* C4DOpenVDBPrimitive.cpp in Sources */,
+				059E91592137C4EF00472B23 /* C4DOpenVDBHelp.cpp in Sources */,
+				05A4BDCB2158B4E800BA66F9 /* C4DOpenVDBCombine.cpp in Sources */,
+				05113030214CDDD500C2C578 /* C4DOpenVDBGenerator.cpp in Sources */,
+				059E915E213F5BE100472B23 /* C4DOpenVDBVisualizer.cpp in Sources */,
+				A0A6683339E921D362010000 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A0A6683339F470FF41370000 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = cinema.framework;
+			targetProxy = A0A6683339F470FF41050000 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		8A256EB71D81E7D100E325D9 /* UnitySanitize */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8ACD68381C66E7D100F34089 /* sanitizerbase.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LIBRARY = "libc++";
+				"CLANG_CXX_LIBRARY[sdk=macosx10.6][arch=*]" = "libstdc++";
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_ENABLE_KERNEL_DEVELOPMENT = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LD_RUNPATH_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				MAXON_ROOTDIR = ../../;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"-fno-omit-frame-pointer",
+					"-fno-common",
+					"-fsanitize=address",
+					"$(OTHER_CFLAGS)",
+				);
+				OTHER_LDFLAGS = "-fsanitize=address";
+				PRODUCT_NAME = C4DOpenVDB;
+				USER_HEADER_SEARCH_PATHS = "./source/** ./res ./res/description $(MAXON_ROOTDIR)frameworks/cinema.framework/source/** $(inherited)";
+			};
+			name = UnitySanitize;
+		};
+		8A256EB81D81E7D100E325D9 /* UnitySanitize */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				EXECUTABLE_EXTENSION = dylib;
+				GCC_ENABLE_CPP_RTTI = YES;
+				INSTALL_PATH = /.;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/ilmbase/2.2.1/lib,
+					/usr/local/Cellar/tbb/2018_U5/lib,
+					/usr/local/Cellar/boost/1.67.0_1/lib,
+					/usr/local/Cellar/jemalloc/5.1.0/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = UnitySanitize;
+		};
+		8ACD68351C66E7A300F34089 /* Sanitize */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8ACD68381C66E7D100F34089 /* sanitizerbase.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LIBRARY = "libc++";
+				"CLANG_CXX_LIBRARY[sdk=macosx10.6][arch=*]" = "libstdc++";
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_ENABLE_KERNEL_DEVELOPMENT = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LD_RUNPATH_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				MAXON_ROOTDIR = ../../;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"-fno-omit-frame-pointer",
+					"-fno-common",
+					"-fsanitize=address",
+					"$(OTHER_CFLAGS)",
+				);
+				OTHER_LDFLAGS = "-fsanitize=address";
+				PRODUCT_NAME = C4DOpenVDB;
+				USER_HEADER_SEARCH_PATHS = "./source/** ./res ./res/description $(MAXON_ROOTDIR)frameworks/cinema.framework/source/** $(inherited)";
+			};
+			name = Sanitize;
+		};
+		8ACD68361C66E7A300F34089 /* Sanitize */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				EXECUTABLE_EXTENSION = dylib;
+				GCC_ENABLE_CPP_RTTI = YES;
+				INSTALL_PATH = /.;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/ilmbase/2.2.1/lib,
+					/usr/local/Cellar/tbb/2018_U5/lib,
+					/usr/local/Cellar/boost/1.67.0_1/lib,
+					/usr/local/Cellar/jemalloc/5.1.0/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Sanitize;
+		};
+		A0A6683339000000004B0000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A0A668333900000000000000 /* debugbase.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LIBRARY = "libc++";
+				"CLANG_CXX_LIBRARY[sdk=macosx10.6][arch=*]" = "libstdc++";
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_ENABLE_KERNEL_DEVELOPMENT = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LD_RUNPATH_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				MAXON_ROOTDIR = ../../;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"-DOPENVDB_3_ABI_COMPATIBLE",
+					"-fno-math-errno",
+					"-Werror=unused-result",
+					"$(OTHER_CFLAGS)",
+				);
+				OTHER_LDFLAGS = (
+					"-lopenvdb",
+					"-ldl",
+					"-lm",
+					"-lz",
+					"-lHalf",
+					"-ltbb",
+					"-lboost_iostreams",
+					"-lboost_system",
+					"-ltbbmalloc",
+				);
+				PRODUCT_NAME = C4DOpenVDB;
+				USER_HEADER_SEARCH_PATHS = "./source/** ./res ./res/description $(MAXON_ROOTDIR)frameworks/cinema.framework/source/** $(inherited)";
+			};
+			name = Debug;
+		};
+		A0A668333900000000500000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = A0A668333900000000050000 /* releasebase.xcconfig */;
+			buildSettings = {
+				CLANG_CXX_LIBRARY = "libc++";
+				"CLANG_CXX_LIBRARY[sdk=macosx10.6][arch=*]" = "libstdc++";
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_ENABLE_KERNEL_DEVELOPMENT = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LD_RUNPATH_SEARCH_PATHS = "";
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				MAXON_ROOTDIR = ../../;
+				OTHER_CPLUSPLUSFLAGS = (
+					"-DOPENVDB_3_ABI_COMPATIBLE",
+					"-fno-math-errno",
+					"-Werror=unused-result",
+					"$(OTHER_CFLAGS)",
+				);
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = C4DOpenVDB;
+				USER_HEADER_SEARCH_PATHS = "./source/** ./res ./res/description $(MAXON_ROOTDIR)frameworks/cinema.framework/source/** $(inherited)";
+			};
+			name = Release;
+		};
+		A0A6683339000000005A0000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				EXECUTABLE_EXTENSION = dylib;
+				GCC_ENABLE_CPP_RTTI = YES;
+				INSTALL_PATH = /.;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/ilmbase/2.2.1/lib,
+					/usr/local/Cellar/tbb/2018_U5/lib,
+					/usr/local/Cellar/boost/1.67.0_1/lib,
+					/usr/local/Cellar/jemalloc/5.1.0/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		A0A6683339000000005F0000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				EXECUTABLE_EXTENSION = dylib;
+				GCC_ENABLE_CPP_RTTI = YES;
+				INSTALL_PATH = /.;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/ilmbase/2.2.1/lib,
+					/usr/local/Cellar/tbb/2018_U5/lib,
+					/usr/local/Cellar/boost/1.67.0_1/lib,
+					/usr/local/Cellar/jemalloc/5.1.0/lib,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A0A668333900000000410000 /* Build configuration list for PBXProject "C4DOpenVDB" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0A6683339000000004B0000 /* Debug */,
+				8ACD68351C66E7A300F34089 /* Sanitize */,
+				8A256EB71D81E7D100E325D9 /* UnitySanitize */,
+				A0A668333900000000500000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A0A668333900000000460000 /* Build configuration list for PBXNativeTarget "C4DOpenVDB" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A0A6683339000000005A0000 /* Debug */,
+				8ACD68361C66E7A300F34089 /* Sanitize */,
+				8A256EB81D81E7D100E325D9 /* UnitySanitize */,
+				A0A6683339000000005F0000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A0A6683339000000003C0000 /* Project object */;
+}

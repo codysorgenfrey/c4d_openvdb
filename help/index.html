@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- UIkit CSS -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.12/css/uikit.min.css" />
+		
+		<link rel="stylesheet" href="./css/help.css" />
+
+		<!-- UIkit JS -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.12/js/uikit.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-rc.12/js/uikit-icons.min.js"></script>
+		
+		<!-- JQuery -->
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+		
+		<script>
+			var curFile = "index.html";
+		</script>
+		<script src="js/help.js"></script>
+		
+		<title></title>
+		<meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+	<body>
+		<div uk-grid>
+			<div id="nav" class="uk-background-muted" style="width: 255px;" uk-height-viewport="expand: true">
+				<div style="position: fixed;">
+			    	<ul class="uk-nav uk-nav-default uk-padding"></ul>
+				</div>
+			</div>
+			<div id="body" class="uk-padding uk-width-expand">
+				<div id="header" class="uk-margin-medium">
+					<h1 id="mainTitle"></h1>
+					<ul id="inpage" class="uk-subnav uk-subnav-divider" uk-margin></ul>
+				</div>
+				<div id="content" class="uk-margin-medium uk-child-width-1-1">
+					<div>
+						<div class="uk-card uk-card-body">
+							<h4 id="" class="section uk-card-title">Welcome!</h4>
+							<p>
+								<span id=""> 
+									To the wonderful world of OpenVDB!
+								</span>
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

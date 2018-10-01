@@ -1,0 +1,4 @@
+STRINGTABLE Oc4dopenvdbprimitive {
+    Oc4dopenvdbhelp "VDB Help";
+    C4DOPENVDB_HELP_HTML "Help";
+}

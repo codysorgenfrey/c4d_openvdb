@@ -1,0 +1,26 @@
+// C4D-StringResource
+// Identifier	Text
+
+STRINGTABLE
+{
+    IDS_C4DOpenVDBPrimitive "VDB Primitive";
+    IDS_C4DOpenVDBHelp "VDB Help";
+    IDS_C4DOpenVDBVisualizer "VDB Visualizer";
+    IDS_C4DOpenVDBMesher "VDB Mesher";
+    IDS_C4DOpenVDBCombine "VDB Combine";
+    
+    C4DOPENVDB_SURFACE_COUNT "Surface voxels: ";
+    C4DOPENVDB_VOXEL_COUNT "Active voxels: ";
+    C4DOPENVDB_GRID_NAME "Grid: ";
+    C4DOPENVDB_GRID_TYPE "Grid Type: ";
+    C4DOPENVDB_DISPLAY_GROUP "Display";
+    C4DOPENVDB_DISPLAY_SHAPE "Shape";
+    C4DOPENVDB_DISPLAY_SHAPE_DOT "Dot";
+    C4DOPENVDB_DISPLAY_SHAPE_SQUARE "Square";
+    C4DOPENVDB_DISPLAY_SHAPE_BOX "Box (filled)";
+    C4DOPENVDB_DISPLAY_SHAPE_BOX_LINES "Box (lines)";
+    C4DOPENVDB_GRID_CLASS_SDF "level set";
+    C4DOPENVDB_GRID_CLASS_FOG "fog volume";
+    C4DOPENVDB_GRID_CLASS_UNKNOWN "unkown";
+    C4DOPENVDB_GRID_TRANS_MISMATCH "Grid transforms don't match and need to be resampled.";
+}

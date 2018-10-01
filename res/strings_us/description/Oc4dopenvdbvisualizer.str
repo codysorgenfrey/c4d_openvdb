@@ -1,0 +1,7 @@
+STRINGTABLE Oc4dopenvdbvisualizer {
+	Oc4dopenvdbvisualizer "VDB Visualizer";
+    C4DOPENVDB_VIS_OBJECT "VDB Object";
+    C4DOPENVDB_VIS_OFFSET "Offset";
+    C4DOPENVDB_VIS_COLOR "Color Ramp";
+    C4DOPENVDB_VIS_GROUP "Group";
+}
