@@ -29,14 +29,11 @@ using namespace openvdb;
 //
 //---------------------------------------------------------------------------------
 
-Bool TransformGrid(Matrix mat, FloatGrid::Ptr grid);
+Bool TransformGrid(Matrix mat, FloatGrid &grid);
 
-Bool TransformGrid(Matrix mat, FloatGrid::Ptr grid)
+Bool TransformGrid(Matrix mat, FloatGrid &grid)
 {
-    if (!grid)
-        return false;
-    
-    math::Transform::Ptr xform = grid->transformPtr();
+    math::Transform::Ptr xform = grid.transformPtr();
     Vec4d v1(mat.v1.x, mat.v1.y, mat.v1.z, 0);
     Vec4d v2(mat.v2.x, mat.v2.y, mat.v2.z, 0);
     Vec4d v3(mat.v3.x, mat.v3.y, mat.v3.z, 0);
@@ -278,8 +275,8 @@ Bool UpdateSurfaceSlice(C4DOpenVDBObject *vdb, C4DOpenVDBVisualizer *vis, Int32 
     util::PagedArray<attribs>::ValueBuffer attribsBufferDummy(attribsArray);//dummy used for initialization
     tbb::enumerable_thread_specific<util::PagedArray<attribs>::ValueBuffer> attribsPool(attribsBufferDummy);//thread local storage pool of ValueBuffers
     math::Transform xform = vdb->helper->grid->transform();
-    Float offsetMin = offset - vis->voxelSize;
-    Float offsetMax = offset + vis->voxelSize;
+    float offsetMin = offset - vis->voxelSize;
+    float offsetMax = offset + vis->voxelSize;
     
     tree::IteratorRange<FloatGrid::ValueOnCIter> floatRange(vdb->helper->grid->tree().cbeginValueOn());
     float min,max;
@@ -403,7 +400,7 @@ Bool GetVDBPolygonized(BaseObject *inObject, Float iso, Float adapt, BaseObject 
     
     gridCopy = vdb->helper->grid->deepCopy();
     
-    TransformGrid(inObject->GetMl(), gridCopy);
+    TransformGrid(inObject->GetMl(), *gridCopy);
     
     tools::volumeToMesh(*gridCopy, points, tris, quads, iso, adapt);
     
@@ -439,8 +436,8 @@ struct GridOps {
     static inline void diff(const float& a, const float& b, float& result) {
         result = a - b;
     }
-    static inline void invert(const float& a, const float& b, float& result) {
-        result = 1 - a;
+    static inline void invert(const openvdb::FloatGrid::ValueAllIter& iter) {
+        iter.setValue(*iter * -1);
     }
     static inline void blend1(const float& a, const float& b, float& result) {
         result = (1 - a) * b;
@@ -449,6 +446,57 @@ struct GridOps {
         result = a + (1 - a) * b;
     }
 };
+
+void SampleGrid(FloatGrid::Ptr grid)
+{
+    GePrint("BG: " + String::FloatToString(grid->background()));
+    
+    FloatGrid::Accessor ac = grid->getAccessor();
+    math::Transform xform = grid->transform();
+    Vec3d wsPos(0);
+    math::Coord pos = xform.worldToIndexCellCentered(wsPos);
+    float result = ac.getValue(pos);
+    GePrint(String::FloatToString(wsPos.x()) + ", " +
+            String::FloatToString(wsPos.y()) + ", " +
+            String::FloatToString(wsPos.z()) + ": " +
+            String::FloatToString(result)
+            );
+    
+    wsPos = Vec3d(50,0,0);
+    pos = xform.worldToIndexCellCentered(wsPos);
+    result = ac.getValue(pos);
+    GePrint(String::FloatToString(wsPos.x()) + ", " +
+            String::FloatToString(wsPos.y()) + ", " +
+            String::FloatToString(wsPos.z()) + ": " +
+            String::FloatToString(result)
+            );
+    
+    wsPos = Vec3d(100,0,0);
+    pos = xform.worldToIndexCellCentered(wsPos);
+    result = ac.getValue(pos);
+    GePrint(String::FloatToString(wsPos.x()) + ", " +
+            String::FloatToString(wsPos.y()) + ", " +
+            String::FloatToString(wsPos.z()) + ": " +
+            String::FloatToString(result)
+            );
+    
+    wsPos = Vec3d(150,0,0);
+    pos = xform.worldToIndexCellCentered(wsPos);
+    result = ac.getValue(pos);
+    GePrint(String::FloatToString(wsPos.x()) + ", " +
+            String::FloatToString(wsPos.y()) + ", " +
+            String::FloatToString(wsPos.z()) + ": " +
+            String::FloatToString(result)
+            );
+    wsPos = Vec3d(-50,93,0);
+    pos = xform.worldToIndexCellCentered(wsPos);
+    result = ac.getValue(pos);
+    GePrint(String::FloatToString(wsPos.x()) + ", " +
+            String::FloatToString(wsPos.y()) + ", " +
+            String::FloatToString(wsPos.z()) + ": " +
+            String::FloatToString(result)
+            );
+}
 
 Bool CombineVDBs(C4DOpenVDBObject *obj,
                  maxon::BaseArray<BaseObject*> *inputs,
@@ -476,7 +524,7 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
             
             gridA = vdb->helper->grid->deepCopy();
             
-            TransformGrid(inputs->operator[](x)->GetMl(), gridA);
+            TransformGrid(inputs->operator[](x)->GetMl(), *gridA);
             
             if (x+1 < inputs->GetCount())
                 x++;
@@ -490,7 +538,7 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
         
         gridB = vdb->helper->grid->deepCopy();
 
-        TransformGrid(inputs->operator[](x)->GetMl(), gridB);
+        TransformGrid(inputs->operator[](x)->GetMl(), *gridB);
         
         if (resample != C4DOPENVDB_COMBINE_RESAMPLE_NONE && gridA->constTransform() != gridB->constTransform())
         {
@@ -498,23 +546,23 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
             switch (resample)
             {
                 case C4DOPENVDB_COMBINE_RESAMPLE_B_A:
-                    resampleGrid = gridB->deepCopy();
+                    resampleGrid = gridB;
                     toMatchGrid = gridA->deepCopy();
                     break;
                     
                 case C4DOPENVDB_COMBINE_RESAMPLE_A_B:
-                    resampleGrid = gridA->deepCopy();
+                    resampleGrid = gridA;
                     toMatchGrid = gridB->deepCopy();
                     break;
                     
                 case C4DOPENVDB_COMBINE_RESAMPLE_HIGH_LOW:
                     if (gridA->voxelSize()[0] < gridB->voxelSize()[0])
                     {
-                        resampleGrid = gridA->deepCopy();
+                        resampleGrid = gridA;
                         toMatchGrid = gridB->deepCopy();
                     }
                     else {
-                        resampleGrid = gridB->deepCopy();
+                        resampleGrid = gridB;
                         toMatchGrid = gridA->deepCopy();
                     }
                     break;
@@ -522,15 +570,17 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
                 case C4DOPENVDB_COMBINE_RESAMPLE_LOW_HIGH:
                     if (gridA->voxelSize()[0] < gridB->voxelSize()[0])
                     {
-                        resampleGrid = gridB->deepCopy();
+                        resampleGrid = gridB;
                         toMatchGrid = gridA->deepCopy();
                     }
                     else {
-                        resampleGrid = gridA->deepCopy();
+                        resampleGrid = gridA;
                         toMatchGrid = gridB->deepCopy();
                     }
                     break;
             }
+            
+            toMatchGrid->newTree(); // erase copied tree, keeping the rest of the grid's settings.
             
             switch (interpolation) {
                 case C4DOPENVDB_COMBINE_INTERPOLATION_LINEAR:
@@ -570,10 +620,8 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
                     else
                         gridA = toMatchGrid;
                     break;
-                    break;
             }
         }
-        
         try
         {
             switch (operation)
@@ -589,13 +637,19 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
                 case C4DOPENVDB_COMBINE_OP_SDF_INTERSECTION:
                     tools::csgIntersection(*gridA, *gridB);
                     break;
+                    
+                case C4DOPENVDB_COMBINE_OP_COPY_A:
+                    x = inputs->GetCount(); // don't continue down the heirarchy.
+                    break;
                 
                 case C4DOPENVDB_COMBINE_OP_COPY_B:
                     gridA = gridB;
+                    x = inputs->GetCount(); // don't continue down the heirarchy.
                     break;
                     
                 case C4DOPENVDB_COMBINE_OP_INVERT_A:
-                    gridA->tree().combine(gridA->tree(), GridOps::invert, false);
+                    tools::foreach(gridA->beginValueAll(), GridOps::invert);
+                    x = inputs->GetCount(); // don't continue down the heirarchy.
                     break;
                     
                 case C4DOPENVDB_COMBINE_OP_ADD:
@@ -646,7 +700,6 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
                     tools::compReplace(*gridA, *gridB);
                     break;
                 
-                case C4DOPENVDB_COMBINE_OP_COPY_A:
                 default:
                     break;
             }
@@ -655,19 +708,19 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
         {
             WarningOutput(e.what());
         }
-        
-        if (deactivate)
-            tools::deactivate(*gridA, gridA->background(), (gridZero + deactivateVal));
-        
-        if (signedFloodFill && gridA->getGridClass() == GRID_LEVEL_SET)
-            tools::signedFloodFill(gridA->tree());
-        
-        if (prune)
-            tools::prune(gridA->tree(), (gridZero + pruneVal));
     }
+    
+    if (deactivate)
+        tools::deactivate(*gridA, gridA->background(), (gridZero + deactivateVal));
+    
+    if (signedFloodFill && gridA->getGridClass() == GRID_LEVEL_SET)
+        tools::signedFloodFill(gridA->tree());
+    
+    if (prune)
+        tools::prune(gridA->tree(), (gridZero + pruneVal));
 end:
     obj->helper->grid = gridA;
-     
+    
     return true;
 }
 

@@ -20,8 +20,8 @@ Bool C4DOpenVDBCombine::Init(GeListNode* node)
 {
     if (!SUPER::Init(node)) return false;
     
-    node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_OP), GeData(C4DOPENVDB_COMBINE_OP_SDF_UNION), DESCFLAGS_SET_0);
-    node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_RESAMPLE), GeData(C4DOPENVDB_COMBINE_RESAMPLE_NONE), DESCFLAGS_SET_0);
+    node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_OP), GeData(C4DOPENVDB_COMBINE_OP_SDF_DIFFERENCE), DESCFLAGS_SET_0);
+    node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_RESAMPLE), GeData(C4DOPENVDB_COMBINE_RESAMPLE_B_A), DESCFLAGS_SET_0);
     node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_INTERPOLATION), GeData(C4DOPENVDB_COMBINE_INTERPOLATION_LINEAR), DESCFLAGS_SET_0);
     node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_DEACTIVATE), GeData(false), DESCFLAGS_SET_0);
     node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_DEACTIVATE_VALUE), GeData(0.0), DESCFLAGS_SET_0);
@@ -113,7 +113,7 @@ BaseObject* C4DOpenVDBCombine::GetVirtualObjects(BaseObject* op, HierarchyHelp* 
     op->GetParameter(DescLevel(C4DOPENVDB_COMBINE_DEACTIVATE), mydata, DESCFLAGS_GET_0);
     deactivate = mydata.GetBool();
     
-    op->GetParameter(DescLevel(C4DOPENVDB_COMBINE_DEACTIVATE), mydata, DESCFLAGS_GET_0);
+    op->GetParameter(DescLevel(C4DOPENVDB_COMBINE_DEACTIVATE_VALUE), mydata, DESCFLAGS_GET_0);
     deactivateVal = mydata.GetFloat();
 
     op->GetParameter(DescLevel(C4DOPENVDB_COMBINE_PRUNE), mydata, DESCFLAGS_GET_0);
