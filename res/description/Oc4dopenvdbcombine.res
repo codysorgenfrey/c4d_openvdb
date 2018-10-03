@@ -2,6 +2,15 @@ CONTAINER Oc4dopenvdbcombine {
     INCLUDE Obase;
     NAME Oc4dopenvdbcombine;
     GROUP ID_OBJECTPROPERTIES {
+        GROUP {
+            LAYOUTGROUP; COLUMNS 2;
+            GROUP {
+                REAL C4DOPENVDB_COMBINE_MULT_A { DEFAULT 1.0; STEP 1.0; }
+            }
+            GROUP {
+                REAL C4DOPENVDB_COMBINE_MULT_B { DEFAULT 1.0; STEP 1.0; }
+            }
+        }
         LONG C4DOPENVDB_COMBINE_OP {
             CYCLE {
                 C4DOPENVDB_COMBINE_OP_COPY_A;

@@ -20,6 +20,8 @@ Bool C4DOpenVDBCombine::Init(GeListNode* node)
 {
     if (!SUPER::Init(node)) return false;
     
+    node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_MULT_A), GeData(1.0), DESCFLAGS_SET_0);
+    node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_MULT_B), GeData(1.0), DESCFLAGS_SET_0);
     node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_OP), GeData(C4DOPENVDB_COMBINE_OP_SDF_DIFFERENCE), DESCFLAGS_SET_0);
     node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_RESAMPLE), GeData(C4DOPENVDB_COMBINE_RESAMPLE_B_A), DESCFLAGS_SET_0);
     node->SetParameter(DescLevel(C4DOPENVDB_COMBINE_INTERPOLATION), GeData(C4DOPENVDB_COMBINE_INTERPOLATION_LINEAR), DESCFLAGS_SET_0);
@@ -74,7 +76,7 @@ BaseObject* C4DOpenVDBCombine::GetVirtualObjects(BaseObject* op, HierarchyHelp* 
     Bool                                  dirty, useColor, signedFloodFill, deactivate, prune;
     maxon::BaseArray<BaseObject*>         inputs;
     Int32                                 operation, resample, interpolation;
-    Float                                 deactivateVal, pruneVal;
+    Float                                 deactivateVal, pruneVal, aMult, bMult;
     Vector32                              userColor;
     
     dirty = false;
@@ -100,7 +102,13 @@ BaseObject* C4DOpenVDBCombine::GetVirtualObjects(BaseObject* op, HierarchyHelp* 
     
     if (!RecurseCollectVDBs(inObject, &inputs, true))
         goto error;
-        
+    
+    op->GetParameter(DescLevel(C4DOPENVDB_COMBINE_MULT_A), mydata, DESCFLAGS_GET_0);
+    aMult = mydata.GetFloat();
+    
+    op->GetParameter(DescLevel(C4DOPENVDB_COMBINE_MULT_B), mydata, DESCFLAGS_GET_0);
+    bMult = mydata.GetFloat();
+    
     op->GetParameter(DescLevel(C4DOPENVDB_COMBINE_OP), mydata, DESCFLAGS_GET_0);
     operation = mydata.GetInt32();
     
@@ -125,7 +133,19 @@ BaseObject* C4DOpenVDBCombine::GetVirtualObjects(BaseObject* op, HierarchyHelp* 
     op->GetParameter(DescLevel(C4DOPENVDB_COMBINE_SIGN_FLOOD_FILL), mydata, DESCFLAGS_GET_0);
     signedFloodFill = mydata.GetBool();
     
-    if (!CombineVDBs(this, &inputs, operation, resample, interpolation, deactivate, deactivateVal, prune, pruneVal, signedFloodFill))
+    if (!CombineVDBs(this,
+                     &inputs,
+                     aMult,
+                     bMult,
+                     operation,
+                     resample,
+                     interpolation,
+                     deactivate,
+                     deactivateVal,
+                     prune,
+                     pruneVal,
+                     signedFloodFill)
+        )
         goto error;
     
     op->GetParameter(DescLevel(ID_BASEOBJECT_USECOLOR), mydata, DESCFLAGS_GET_0);

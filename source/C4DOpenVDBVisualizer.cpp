@@ -382,7 +382,7 @@ BaseObject* C4DOpenVDBVisualizer::GetVirtualObjects(BaseObject* op, HierarchyHel
     if (!grad->InitRender(irs))
         goto error;
     
-    if (!UpdateSurfaceSlice(vdb, this, axis, offset, grad))
+    if (!UpdateVisualizerSlice(vdb, this, axis, offset, grad))
         goto error;
     
     grad->FreeRender();

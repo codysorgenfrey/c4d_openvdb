@@ -36,4 +36,6 @@ STRINGTABLE Oc4dopenvdbcombine {
     C4DOPENVDB_COMBINE_PRUNE  "";
     C4DOPENVDB_COMBINE_PRUNE_VALUE  "Prune tolerance";
     C4DOPENVDB_COMBINE_SIGN_FLOOD_FILL  "Signed flood fill output";
+    C4DOPENVDB_COMBINE_MULT_A "A Multiplier";
+    C4DOPENVDB_COMBINE_MULT_B "B Multiplier";
 }

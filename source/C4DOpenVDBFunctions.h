@@ -26,7 +26,7 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor);
 Bool MakeShape(VDBObjectHelper *helper, Int32 shape, float width, Vector center, float voxelSize, float bandWidth);
 
 // C4DOpenVDBVisualizer Functions
-Bool UpdateSurfaceSlice(C4DOpenVDBObject *vdb, C4DOpenVDBVisualizer *vis, Int32 axis, Float offset, Gradient *grad);
+Bool UpdateVisualizerSlice(C4DOpenVDBObject *vdb, C4DOpenVDBVisualizer *vis, Int32 axis, Float offset, Gradient *grad);
 
 // C4DOpenVDBMesher Functions
 Bool GetVDBPolygonized(BaseObject *inObject, Float iso, Float adapt, BaseObject *outObject);
@@ -34,6 +34,8 @@ Bool GetVDBPolygonized(BaseObject *inObject, Float iso, Float adapt, BaseObject 
 // C4DOpenVDBCombine Functions
 Bool CombineVDBs(C4DOpenVDBObject *obj,
                  maxon::BaseArray<BaseObject*> *inputs,
+                 Float aMult,
+                 Float bMult,
                  Int32 operation,
                  Int32 resample,
                  Int32 interpolation,

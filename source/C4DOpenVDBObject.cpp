@@ -201,10 +201,10 @@ Bool DrawVDB(BaseObject *op, C4DOpenVDBObject *vdb, BaseDraw *bd, BaseDrawHelp *
                 pFactory->AddLine(FragmentProgram, "    ocolor.rgb = "+vdb->userColorUni+";");
                 pFactory->AddLine(FragmentProgram, "}");
             }
-            pFactory->AddLine(FragmentProgram, "if (normal != vec4(0,0,0,1)){"); // transperency
+            pFactory->AddLine(FragmentProgram, "if (normal != vec4(0,0,0,1)){"); // if not transperency
             pFactory->AddLine(FragmentProgram, "    ocolor.a = icolor.a;");
             pFactory->AddLine(FragmentProgram, "} else {");
-            pFactory->AddLine(FragmentProgram, "    ocolor.a = icolor.r * 0.1;"); //use color as alpha
+            pFactory->AddLine(FragmentProgram, "    ocolor.a = 0.1;");
             pFactory->AddLine(FragmentProgram, "}");
             pFactory->AddLine(FragmentProgram, "if ("+vdb->backFaceUni+" > 0) if (dot(normal.xyz, V) < 0.0) discard;");
             pFactory->CompilePrograms();

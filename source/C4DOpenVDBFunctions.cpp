@@ -29,9 +29,10 @@ using namespace openvdb;
 //
 //---------------------------------------------------------------------------------
 
-Bool TransformGrid(Matrix mat, FloatGrid &grid);
+Bool UpdateGridTransform(Matrix mat, FloatGrid &grid);
+math::Coord GetVoxelPosFromLeaf(FloatGrid::ValueOnCIter iter, int x, int y, int z);
 
-Bool TransformGrid(Matrix mat, FloatGrid &grid)
+Bool UpdateGridTransform(Matrix mat, FloatGrid &grid)
 {
     math::Transform::Ptr xform = grid.transformPtr();
     Vec4d v1(mat.v1.x, mat.v1.y, mat.v1.z, 0);
@@ -43,6 +44,17 @@ Bool TransformGrid(Matrix mat, FloatGrid &grid)
     xform->postMult(xformMat);
     
     return true;
+}
+
+math::Coord GetVoxelPosFromLeaf(FloatGrid::ValueOnCIter iter, int x, int y, int z)
+{
+    const math::CoordBBox bbox = iter.getBoundingBox();
+    const math::Coord min = bbox.min();
+    // add our offset to the min to get the voxel position
+    const int voxelX = min.x() + x;
+    const int voxelY = min.y() + y;
+    const int voxelZ = min.z() + z;
+    return math::Coord(voxelX, voxelY, voxelZ);
 }
 
 //---------------------------------------------------------------------------------
@@ -264,16 +276,67 @@ Bool MakeShape(VDBObjectHelper *helper, Int32 shape, float width, Vector center,
     return true;
 }
 
-Bool UpdateSurfaceSlice(C4DOpenVDBObject *vdb, C4DOpenVDBVisualizer *vis, Int32 axis, Float offset, Gradient *grad)
+struct VisualizerAttribs { Vec3f pos; float val; };
+
+void GetVisualizerAttribsForVoxelInSlice(
+                               FloatGrid::ValueOnCIter iter,
+                               Vec3f voxelPos,
+                               float minVoxelVal,
+                               float maxVoxelVal,
+                               Int32 axis,
+                               float axisOffsetMin,
+                               float axisOffsetMax,
+                               util::PagedArray<VisualizerAttribs>::ValueBuffer &attribsBuffer
+                               )
+{
+    bool isInRange = false;
+    
+    switch (axis) {
+        case PRIM_AXIS_XN:
+        case PRIM_AXIS_XP:
+            isInRange = (voxelPos.x() > axisOffsetMin && voxelPos.x() < axisOffsetMax);
+            break;
+            
+        case PRIM_AXIS_YN:
+        case PRIM_AXIS_YP:
+            isInRange = (voxelPos.y() > axisOffsetMin && voxelPos.y() < axisOffsetMax);
+            break;
+            
+        case PRIM_AXIS_ZN:
+        case PRIM_AXIS_ZP:
+            isInRange = (voxelPos.z() > axisOffsetMin && voxelPos.z() < axisOffsetMax);
+            break;
+            
+        default:
+            break;
+    }
+    
+    if (isInRange)
+    {
+        VisualizerAttribs myAttribs;
+        myAttribs.pos = voxelPos;
+        if (*iter > 0)
+        {
+            myAttribs.val = *iter / maxVoxelVal;
+        } else
+        {
+            myAttribs.val = *iter / math::Abs(minVoxelVal);
+        }
+        if (!math::isFinite(myAttribs.val))
+            myAttribs.val = 0.0f;
+        attribsBuffer.push_back( myAttribs );
+    }
+}
+
+Bool UpdateVisualizerSlice(C4DOpenVDBObject *vdb, C4DOpenVDBVisualizer *vis, Int32 axis, Float offset, Gradient *grad)
 {
     if (!vdb->helper->grid) return false;
     
     vis->voxelSize = vdb->helper->grid->voxelSize().x();
     
-    struct attribs { Vec3f pos; float val; };
-    util::PagedArray<attribs> attribsArray;
-    util::PagedArray<attribs>::ValueBuffer attribsBufferDummy(attribsArray);//dummy used for initialization
-    tbb::enumerable_thread_specific<util::PagedArray<attribs>::ValueBuffer> attribsPool(attribsBufferDummy);//thread local storage pool of ValueBuffers
+    util::PagedArray<VisualizerAttribs> attribsArray;
+    util::PagedArray<VisualizerAttribs>::ValueBuffer attribsBufferDummy(attribsArray);//dummy used for initialization
+    tbb::enumerable_thread_specific<util::PagedArray<VisualizerAttribs>::ValueBuffer> attribsPool(attribsBufferDummy);//thread local storage pool of ValueBuffers
     math::Transform xform = vdb->helper->grid->transform();
     float offsetMin = offset - vis->voxelSize;
     float offsetMax = offset + vis->voxelSize;
@@ -281,91 +344,35 @@ Bool UpdateSurfaceSlice(C4DOpenVDBObject *vdb, C4DOpenVDBVisualizer *vis, Int32 
     tree::IteratorRange<FloatGrid::ValueOnCIter> floatRange(vdb->helper->grid->tree().cbeginValueOn());
     float min,max;
     vdb->helper->grid->evalMinMax(min, max);
-    switch (axis) {
-        case PRIM_AXIS_XN:
-        case PRIM_AXIS_XP:
-            tbb::parallel_for(
-                              floatRange,
-                              [&xform, &attribsPool, &min, &max, &offsetMin, &offsetMax](tree::IteratorRange<FloatGrid::ValueOnCIter>& range) {
-                                  util::PagedArray<attribs>::ValueBuffer &attribsBuffer = attribsPool.local();
-                                  for ( ; range; ++range){
-                                      FloatGrid::ValueOnCIter iter = range.iterator();
-                                      Vec3f pos = xform.indexToWorld( iter.getCoord() );
-                                      if (pos.x() > offsetMin && pos.x() < offsetMax){
-                                          attribs myAttribs;
-                                          myAttribs.pos = pos;
-                                          if (*iter > 0)
+    tbb::parallel_for(
+                      floatRange,
+                      [&axis, &xform, &attribsPool, &min, &max, &offsetMin, &offsetMax](tree::IteratorRange<FloatGrid::ValueOnCIter>& range) {
+                          util::PagedArray<VisualizerAttribs>::ValueBuffer &attribsBuffer = attribsPool.local();
+                          for ( ; range; ++range)
+                          {
+                              FloatGrid::ValueOnCIter iter = range.iterator();
+                              if (iter.isVoxelValue())
+                              {
+                                  Vec3f pos = xform.indexToWorld( iter.getCoord() );
+                                  GetVisualizerAttribsForVoxelInSlice(iter, pos, min, max, axis, offsetMin, offsetMax, attribsBuffer);
+                              } else
+                              {
+                                  for (int x=0; x<8; x++)
+                                  {
+                                      for (int y=0; y<8; y++)
+                                      {
+                                          for (int z=0; z<8; z++)
                                           {
-                                              myAttribs.val = *iter / max;
-                                          } else
-                                          {
-                                              myAttribs.val = *iter / math::Abs(min);
+                                              Vec3f pos = xform.indexToWorld( GetVoxelPosFromLeaf(iter, x, y, z) );
+                                              GetVisualizerAttribsForVoxelInSlice(iter, pos, min, max, axis, offsetMin, offsetMax, attribsBuffer);
                                           }
-                                          if (!math::isFinite(myAttribs.val)) myAttribs.val = 0.0f;
-                                          attribsBuffer.push_back( myAttribs );
                                       }
                                   }
                               }
-                              );
-            break;
-        
-        case PRIM_AXIS_YN:
-        case PRIM_AXIS_YP:
-            tbb::parallel_for(
-                              floatRange,
-                              [&xform, &attribsPool, &min, &max, &offsetMin, &offsetMax](tree::IteratorRange<FloatGrid::ValueOnCIter>& range) {
-                                  util::PagedArray<attribs>::ValueBuffer &attribsBuffer = attribsPool.local();
-                                  for ( ; range; ++range){
-                                      FloatGrid::ValueOnCIter iter = range.iterator();
-                                      Vec3f pos = xform.indexToWorld( iter.getCoord() );
-                                      if (pos.y() > offsetMin && pos.y() < offsetMax){
-                                          attribs myAttribs;
-                                          myAttribs.pos = pos;
-                                          if (*iter > 0)
-                                          {
-                                              myAttribs.val = *iter / max;
-                                          } else
-                                          {
-                                              myAttribs.val = *iter / math::Abs(min);
-                                          }
-                                          if (!math::isFinite(myAttribs.val)) myAttribs.val = 0.0f;
-                                          attribsBuffer.push_back( myAttribs );
-                                      }
-                                  }
-                              }
-                              );
-            break;
-            
-        case PRIM_AXIS_ZN:
-        case PRIM_AXIS_ZP:
-            tbb::parallel_for(
-                              floatRange,
-                              [&xform, &attribsPool, &min, &max, &offsetMin, &offsetMax](tree::IteratorRange<FloatGrid::ValueOnCIter>& range) {
-                                  util::PagedArray<attribs>::ValueBuffer &attribsBuffer = attribsPool.local();
-                                  for ( ; range; ++range){
-                                      FloatGrid::ValueOnCIter iter = range.iterator();
-                                      Vec3f pos = xform.indexToWorld( iter.getCoord() );
-                                      if (pos.z() > offsetMin && pos.z() < offsetMax){
-                                          attribs myAttribs;
-                                          myAttribs.pos = pos;
-                                          if (*iter > 0)
-                                          {
-                                              myAttribs.val = *iter / max;
-                                          } else
-                                          {
-                                              myAttribs.val = *iter / math::Abs(min);
-                                          }
-                                          if (!math::isFinite(myAttribs.val)) myAttribs.val = 0.0f;
-                                          attribsBuffer.push_back( myAttribs );
-                                      }
-                                  }
-                              }
-                              );
-            break;
-            
-        default:
-            break;
-    }
+                              
+                          }
+                      }
+                      );
     for (auto i=attribsPool.begin(); i!=attribsPool.end(); ++i) i->flush();
     
     vis->surfaceCnt = (Int32)attribsArray.size();
@@ -400,7 +407,7 @@ Bool GetVDBPolygonized(BaseObject *inObject, Float iso, Float adapt, BaseObject 
     
     gridCopy = vdb->helper->grid->deepCopy();
     
-    TransformGrid(inObject->GetMl(), *gridCopy);
+    UpdateGridTransform(inObject->GetMl(), *gridCopy);
     
     tools::volumeToMesh(*gridCopy, points, tris, quads, iso, adapt);
     
@@ -432,7 +439,7 @@ Bool GetVDBPolygonized(BaseObject *inObject, Float iso, Float adapt, BaseObject 
     return true;
 }
 
-struct GridOps {
+struct CombineGridOps {
     static inline void diff(const float& a, const float& b, float& result) {
         result = a - b;
     }
@@ -447,59 +454,10 @@ struct GridOps {
     }
 };
 
-void SampleGrid(FloatGrid::Ptr grid)
-{
-    GePrint("BG: " + String::FloatToString(grid->background()));
-    
-    FloatGrid::Accessor ac = grid->getAccessor();
-    math::Transform xform = grid->transform();
-    Vec3d wsPos(0);
-    math::Coord pos = xform.worldToIndexCellCentered(wsPos);
-    float result = ac.getValue(pos);
-    GePrint(String::FloatToString(wsPos.x()) + ", " +
-            String::FloatToString(wsPos.y()) + ", " +
-            String::FloatToString(wsPos.z()) + ": " +
-            String::FloatToString(result)
-            );
-    
-    wsPos = Vec3d(50,0,0);
-    pos = xform.worldToIndexCellCentered(wsPos);
-    result = ac.getValue(pos);
-    GePrint(String::FloatToString(wsPos.x()) + ", " +
-            String::FloatToString(wsPos.y()) + ", " +
-            String::FloatToString(wsPos.z()) + ": " +
-            String::FloatToString(result)
-            );
-    
-    wsPos = Vec3d(100,0,0);
-    pos = xform.worldToIndexCellCentered(wsPos);
-    result = ac.getValue(pos);
-    GePrint(String::FloatToString(wsPos.x()) + ", " +
-            String::FloatToString(wsPos.y()) + ", " +
-            String::FloatToString(wsPos.z()) + ": " +
-            String::FloatToString(result)
-            );
-    
-    wsPos = Vec3d(150,0,0);
-    pos = xform.worldToIndexCellCentered(wsPos);
-    result = ac.getValue(pos);
-    GePrint(String::FloatToString(wsPos.x()) + ", " +
-            String::FloatToString(wsPos.y()) + ", " +
-            String::FloatToString(wsPos.z()) + ": " +
-            String::FloatToString(result)
-            );
-    wsPos = Vec3d(-50,93,0);
-    pos = xform.worldToIndexCellCentered(wsPos);
-    result = ac.getValue(pos);
-    GePrint(String::FloatToString(wsPos.x()) + ", " +
-            String::FloatToString(wsPos.y()) + ", " +
-            String::FloatToString(wsPos.z()) + ": " +
-            String::FloatToString(result)
-            );
-}
-
 Bool CombineVDBs(C4DOpenVDBObject *obj,
                  maxon::BaseArray<BaseObject*> *inputs,
+                 Float aMult,
+                 Float bMult,
                  Int32 operation,
                  Int32 resample,
                  Int32 interpolation,
@@ -513,6 +471,15 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
     C4DOpenVDBObject        *vdb;
     float                   gridZero = 0;
     
+    struct MultGrid
+    {
+        float m;
+        MultGrid(float inM): m(inM) {}
+        inline void operator()(const FloatGrid::ValueAllIter& iter) const {
+            iter.setValue(*iter * m);
+        }
+    };
+    
     for (Int32 x = 0; x < inputs->GetCount(); x++)
     {
         // Set up our loop, only set gridA on the first pass so that we collect the results through the whole heirarchy.
@@ -524,7 +491,7 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
             
             gridA = vdb->helper->grid->deepCopy();
             
-            TransformGrid(inputs->operator[](x)->GetMl(), *gridA);
+            UpdateGridTransform(inputs->operator[](x)->GetMl(), *gridA);
             
             if (x+1 < inputs->GetCount())
                 x++;
@@ -538,7 +505,13 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
         
         gridB = vdb->helper->grid->deepCopy();
 
-        TransformGrid(inputs->operator[](x)->GetMl(), *gridB);
+        UpdateGridTransform(inputs->operator[](x)->GetMl(), *gridB);
+        
+        if (aMult != 1)
+            tools::foreach(gridA->beginValueAll(), MultGrid(aMult));
+        
+        if (bMult != 1)
+            tools::foreach(gridB->beginValueAll(), MultGrid(bMult));
         
         if (resample != C4DOPENVDB_COMBINE_RESAMPLE_NONE && gridA->constTransform() != gridB->constTransform())
         {
@@ -648,7 +621,7 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
                     break;
                     
                 case C4DOPENVDB_COMBINE_OP_INVERT_A:
-                    tools::foreach(gridA->beginValueAll(), GridOps::invert);
+                    tools::foreach(gridA->beginValueAll(), CombineGridOps::invert);
                     x = inputs->GetCount(); // don't continue down the heirarchy.
                     break;
                     
@@ -657,7 +630,7 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
                     break;
                     
                 case C4DOPENVDB_COMBINE_OP_SUBTRACT:
-                    gridA->tree().combine(gridB->tree(), GridOps::diff, false);
+                    gridA->tree().combine(gridB->tree(), CombineGridOps::diff, false);
                     break;
                     
                 case C4DOPENVDB_COMBINE_OP_MULT:
@@ -677,11 +650,11 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
                     break;
                     
                 case C4DOPENVDB_COMBINE_OP_NEG_A_X_B:
-                    gridA->tree().combine(gridB->tree(), GridOps::blend1, false);
+                    gridA->tree().combine(gridB->tree(), CombineGridOps::blend1, false);
                     break;
                     
                 case C4DOPENVDB_COMBINE_OP_A_PLUS_NEG_A_X_B:
-                    gridA->tree().combine(gridB->tree(), GridOps::blend2, false);
+                    gridA->tree().combine(gridB->tree(), CombineGridOps::blend2, false);
                     break;
                     
                 case C4DOPENVDB_COMBINE_OP_ACT_UNION:
