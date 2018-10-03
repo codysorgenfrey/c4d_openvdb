@@ -14,7 +14,7 @@
 
 class VDBObjectHelper; // forward declare our helper since maxon stuff can't know about vdb stuff.
 
-struct voxelAttribs { Vector32 pos; Vector32 norm; Vector32 col; Float zdepth; };
+struct VoxelAttribs { Vector32 pos; Vector32 norm; Vector32 col; Float zdepth; };
 
 class C4DOpenVDBObject : public C4DOpenVDBGenerator
 {
@@ -27,7 +27,7 @@ public:
     maxon::BaseArray<GlVertexBufferAttributeInfo> *attribInfoArray;
     GlVertexBufferVectorInfo                      *vectorInfo[3];
     GlVertexBufferAttributeInfo                   *attribInfo[3];
-    voxelAttribs                                  *surfaceAttribs;
+    VoxelAttribs                                  *surfaceAttribs;
     Int32                                         voxelCnt, surfaceCnt, gridClass;
     Float                                         voxelSize;
     Bool                                          isSlaveOfMaster, UDF;

@@ -9,7 +9,7 @@
 //---------------------------------------------------------------------------------
 
 Int32 GlErrorHandler(GlProgramType type, const char* pszError);
-Bool sortDepth(const voxelAttribs a, const voxelAttribs b);
+Bool sortDepth(const VoxelAttribs a, const VoxelAttribs b);
 String FormatWithCommas(Int num);
 Bool DrawVDB(BaseObject *op, C4DOpenVDBObject *vdb, BaseDraw *bd, BaseDrawHelp *bh);
 
@@ -35,7 +35,7 @@ Int32 GlErrorHandler(GlProgramType type, const char* pszError)
     return 0;
 }
 
-Bool sortDepth(const voxelAttribs a, const voxelAttribs b)
+Bool sortDepth(const VoxelAttribs a, const VoxelAttribs b)
 {
     return a.zdepth > b.zdepth; //draw from back to front
 }

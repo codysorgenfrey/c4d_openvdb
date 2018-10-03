@@ -130,14 +130,41 @@ Bool UnsignSDF(VDBObjectHelper *helper)
     return true;
 }
 
+struct SurfaceAttribs { Vec3f pos; Vec3f norm; Vec3f col; };
+
+void GetSurfaceAttribsForVoxel(
+                               FloatGrid::ValueOnCIter iter,
+                               Vec3f pos,
+                               float min,
+                               float max,
+                               util::PagedArray<SurfaceAttribs>::ValueBuffer &attribsBuffer
+                               );
+
+void GetSurfaceAttribsForVoxel(
+                               FloatGrid::ValueOnCIter iter,
+                               Vec3f pos,
+                               float min,
+                               float max,
+                               util::PagedArray<SurfaceAttribs>::ValueBuffer &attribsBuffer
+                               )
+{
+    SurfaceAttribs myAttribs;
+    myAttribs.pos = pos;
+    myAttribs.norm = Vec3f(0);
+    float col = math::Abs(*iter) / max;
+    if (!math::isFinite(col))
+        col = 0.0f;
+    myAttribs.col = Vec3f(col);
+    attribsBuffer.push_back( myAttribs );
+}
+
 Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
 {
     if (!obj->helper->grid) return false;
     
-    struct attribs { Vec3f pos; Vec3f norm; Vec3f col; };
-    util::PagedArray<attribs> attribsArray;
-    util::PagedArray<attribs>::ValueBuffer attribsBufferDummy(attribsArray);//dummy used for initialization
-    tbb::enumerable_thread_specific<util::PagedArray<attribs>::ValueBuffer> attribsPool(attribsBufferDummy);//thread local storage pool of ValueBuffers
+    util::PagedArray<SurfaceAttribs> attribsArray;
+    util::PagedArray<SurfaceAttribs>::ValueBuffer attribsBufferDummy(attribsArray);//dummy used for initialization
+    tbb::enumerable_thread_specific<util::PagedArray<SurfaceAttribs>::ValueBuffer> attribsPool(attribsBufferDummy);//thread local storage pool of ValueBuffers
     math::Transform xform = obj->helper->grid->transform();
     
     if (obj->helper->grid->getGridClass() == GRID_LEVEL_SET && !obj->helper->grid->metaValue<bool>("Unsigned"))
@@ -149,10 +176,10 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
         tbb::parallel_for(
                           gradRange,
                           [&xform, &attribsPool, &userColor](tree::IteratorRange<VectorGrid::ValueOnCIter>& range) {
-                              util::PagedArray<attribs>::ValueBuffer &attribsBuffer = attribsPool.local();
+                              util::PagedArray<SurfaceAttribs>::ValueBuffer &attribsBuffer = attribsPool.local();
                               for ( ; range; ++range){
                                   VectorGrid::ValueOnCIter iter = range.iterator();
-                                  attribs myAttribs;
+                                  SurfaceAttribs myAttribs;
                                   myAttribs.pos = xform.indexToWorld( iter.getCoord() );
                                   myAttribs.norm = iter.getValue();
                                   myAttribs.col = Vec3f(userColor.x, userColor.y, userColor.z);
@@ -164,22 +191,35 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
     else
     {
         tree::IteratorRange<FloatGrid::ValueOnCIter> floatRange(obj->helper->grid->tree().cbeginValueOn());
-        float min,max;
+        float min,max, bgVal;
         obj->helper->grid->evalMinMax(min, max);
+        bgVal = obj->helper->grid->background();
         tbb::parallel_for(
                           floatRange,
-                          [&xform, &attribsPool, &min, &max](tree::IteratorRange<FloatGrid::ValueOnCIter>& range) {
-                              util::PagedArray<attribs>::ValueBuffer &attribsBuffer = attribsPool.local();
+                          [&xform, &attribsPool, &min, &max, &bgVal](tree::IteratorRange<FloatGrid::ValueOnCIter>& range) {
+                              util::PagedArray<SurfaceAttribs>::ValueBuffer &attribsBuffer = attribsPool.local();
                               for ( ; range; ++range){
                                   FloatGrid::ValueOnCIter iter = range.iterator();
-                                  if (*iter >= min && *iter < max) { // exclude max since the interior is filled with max
-                                      attribs myAttribs;
-                                      myAttribs.pos = xform.indexToWorld( iter.getCoord() );
-                                      myAttribs.norm = Vec3f(0);
-                                      float col = math::Abs(*iter) / max;
-                                      if (!math::isFinite(col)) col = 0.0f;
-                                      myAttribs.col = Vec3f(col);
-                                      attribsBuffer.push_back( myAttribs );
+                                  if (*iter !=bgVal && *iter != math::negative(bgVal)) {
+                                      if (iter.isVoxelValue())
+                                      {
+                                          Vec3f pos = xform.indexToWorld( iter.getCoord() );
+                                          GetSurfaceAttribsForVoxel(iter, pos, min, max, attribsBuffer);
+                                      } else
+                                      {
+                                          for (int x=0; x<8; x++)
+                                          {
+                                              for (int y=0; y<8; y++)
+                                              {
+                                                  for (int z=0; z<8; z++)
+                                                  {
+                                                      Vec3f pos = xform.indexToWorld( GetVoxelPosFromLeaf(iter, x, y, z) );
+                                                      GetSurfaceAttribsForVoxel(iter, pos, min, max, attribsBuffer);
+                                                  }
+                                              }
+                                          }
+                                      }
+                                      
                                   }
                               }
                           }
@@ -191,7 +231,7 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
     
     DeleteMem(obj->surfaceAttribs);
     
-    obj->surfaceAttribs = NewMem(voxelAttribs, obj->surfaceCnt);
+    obj->surfaceAttribs = NewMem(VoxelAttribs, obj->surfaceCnt);
     
     for (int x=0;x<obj->surfaceCnt;x++)
     {
@@ -236,7 +276,6 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
 
 Bool MakeShape(VDBObjectHelper *helper, Int32 shape, float width, Vector center, float voxelSize, float bandWidth)
 {
-    //std::clock_t begin = std::clock();
     switch (shape) {
         case C4DOPENVDB_PRIM_SETTINGS_TYPE_SPHERE:
             helper->grid = tools::createLevelSetSphere<FloatGrid>(width, Vec3f(center.x, center.y, center.z), voxelSize, bandWidth);
@@ -270,24 +309,32 @@ Bool MakeShape(VDBObjectHelper *helper, Int32 shape, float width, Vector center,
     helper->grid->insertMeta("Unsigned", BoolMetadata(false));
     helper->grid->insertMeta("Band Width", FloatMetadata(bandWidth));
     
-    //std::clock_t end = std::clock();
-    //std::cout << "Build SDF (sec): " << double(end - begin) / CLOCKS_PER_SEC << std::endl;
-    
     return true;
 }
 
 struct VisualizerAttribs { Vec3f pos; float val; };
 
 void GetVisualizerAttribsForVoxelInSlice(
-                               FloatGrid::ValueOnCIter iter,
-                               Vec3f voxelPos,
-                               float minVoxelVal,
-                               float maxVoxelVal,
-                               Int32 axis,
-                               float axisOffsetMin,
-                               float axisOffsetMax,
-                               util::PagedArray<VisualizerAttribs>::ValueBuffer &attribsBuffer
-                               )
+                                         FloatGrid::ValueOnCIter iter,
+                                         Vec3f voxelPos,
+                                         float minVoxelVal,
+                                         float maxVoxelVal,
+                                         Int32 axis,
+                                         float axisOffsetMin,
+                                         float axisOffsetMax,
+                                         util::PagedArray<VisualizerAttribs>::ValueBuffer &attribsBuffer
+                                         );
+
+void GetVisualizerAttribsForVoxelInSlice(
+                                         FloatGrid::ValueOnCIter iter,
+                                         Vec3f voxelPos,
+                                         float minVoxelVal,
+                                         float maxVoxelVal,
+                                         Int32 axis,
+                                         float axisOffsetMin,
+                                         float axisOffsetMax,
+                                         util::PagedArray<VisualizerAttribs>::ValueBuffer &attribsBuffer
+                                         )
 {
     bool isInRange = false;
     
