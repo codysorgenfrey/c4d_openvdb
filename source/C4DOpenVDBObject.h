@@ -32,6 +32,7 @@ public:
     Float                                         voxelSize;
     Bool                                          isSlaveOfMaster, UDF;
     String                                        gridName, gridType;
+    Vector                                        prevFacingVector;
     GlString                                      voxelSizeUni, vpSizeUni, projMatUni, displayTypeUni, displayTypeFragUni, backFaceUni, userColorUni; //uniforms for opengl
     
     static NodeData* Alloc(void) { return NewObjClear(C4DOpenVDBObject); }

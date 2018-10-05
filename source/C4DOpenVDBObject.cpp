@@ -59,7 +59,7 @@ String FormatWithCommas(Int num)
 Bool DrawVDB(BaseObject *op, C4DOpenVDBObject *vdb, BaseDraw *bd, BaseDrawHelp *bh)
 {
     GeData                                 myData;
-    Bool                                   bEOGL, x, cl, ct, cr, cb, useColor, transperant;
+    Bool                                   bEOGL, x, cl, ct, cr, cb, useColor, transperant, rebuildBuffer;
     Int32                                  displayType, vectorCnt, lightCnt, drawportType;
     UInt32                                 myFlags;
     GlVertexBufferDrawSubbuffer            di(C4D_VERTEX_BUFFER_POINTS, vdb->surfaceCnt, 0);
@@ -104,8 +104,19 @@ Bool DrawVDB(BaseObject *op, C4DOpenVDBObject *vdb, BaseDraw *bd, BaseDrawHelp *
     if (drawportType == DRAWPORT_TYPE_OGL_HQ && displayType != C4DOPENVDB_DISPLAY_SHAPE_BOX && displayType != C4DOPENVDB_DISPLAY_SHAPE_BOX_LINES)
     {
         GlVertexBuffer* pBuffer = GlVertexBuffer::GetVertexBuffer(bd, op, 0, nullptr, 0, 0);
-        if (!pBuffer) goto _no_eogl;
-        if (pBuffer->IsDirty())
+        if (!pBuffer)
+            goto _no_eogl;
+        
+        rebuildBuffer = pBuffer->IsDirty();
+        
+        if (transperant && !vdb->prevFacingVector.IsZero())
+        {
+            // if our camera has rotated more that 90 degrees we need to resort our depth
+            if (Dot((camMat.off - op->GetAbsPos()).GetNormalized(), vdb->prevFacingVector.GetNormalized()) <= 0.5)
+                rebuildBuffer = true;
+        }
+        
+        if (rebuildBuffer)
         {
             // let's allocate a buffer that holds our data
             pBuffer->FreeBuffer(bd, vdb->subBuffer);
@@ -122,6 +133,7 @@ Bool DrawVDB(BaseObject *op, C4DOpenVDBObject *vdb, BaseDraw *bd, BaseDrawHelp *
             
             if (transperant)
             {
+                vdb->prevFacingVector = camMat.off - op->GetAbsPos();
                 for (x = 0; x < vdb->surfaceCnt; x++)
                 {
                     //z component of the position in camera space
@@ -204,7 +216,7 @@ Bool DrawVDB(BaseObject *op, C4DOpenVDBObject *vdb, BaseDraw *bd, BaseDrawHelp *
             pFactory->AddLine(FragmentProgram, "if (normal != vec4(0,0,0,1)){"); // if not transperency
             pFactory->AddLine(FragmentProgram, "    ocolor.a = icolor.a;");
             pFactory->AddLine(FragmentProgram, "} else {");
-            pFactory->AddLine(FragmentProgram, "    ocolor.a = 0.1;");
+            pFactory->AddLine(FragmentProgram, "    ocolor.a = 0.025;");
             pFactory->AddLine(FragmentProgram, "}");
             pFactory->AddLine(FragmentProgram, "if ("+vdb->backFaceUni+" > 0) if (dot(normal.xyz, V) < 0.0) discard;");
             pFactory->CompilePrograms();
@@ -244,7 +256,7 @@ Bool DrawVDB(BaseObject *op, C4DOpenVDBObject *vdb, BaseDraw *bd, BaseDrawHelp *
         pFactory->UnlockFactory();
         
         bEOGL = true;
-    _no_eogl:;
+_no_eogl:;
     }
     if (!bEOGL)
     {
@@ -347,6 +359,7 @@ Bool C4DOpenVDBObject::Init(GeListNode* node)
     gridType = "None";
     isSlaveOfMaster = false;
     UDF = false;
+    prevFacingVector = Vector(0);
     
     node->SetParameter(DescLevel(C4DOPENVDB_DISPLAY_SHAPE), GeData(C4DOPENVDB_DISPLAY_SHAPE_SQUARE), DESCFLAGS_SET_0);
     
