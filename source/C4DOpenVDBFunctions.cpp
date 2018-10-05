@@ -19,6 +19,7 @@
 #include <openvdb/tools/Statistics.h> // for debugging
 #include <openvdb/tools/Composite.h> // for combining grids
 #include <openvdb/tools/LevelSetRebuild.h> // for doLevelSetRebuild
+#include <openvdb/util/CpuTimer.h> // for profiling
 
 using namespace openvdb;
 
@@ -130,14 +131,19 @@ Bool UnsignSDF(VDBObjectHelper *helper)
     return true;
 }
 
-struct SurfaceAttribs { Vec3f pos; Vec3f norm; Vec3f col; };
+struct SurfaceVoxelAttribs
+{
+    Vec3f pos;
+    Vec3f norm;
+    Vec3f col;
+};
 
 void GetSurfaceAttribsForVoxel(
                                FloatGrid::ValueOnCIter iter,
                                Vec3f pos,
                                float min,
                                float max,
-                               util::PagedArray<SurfaceAttribs>::ValueBuffer &attribsBuffer
+                               util::PagedArray<SurfaceVoxelAttribs>::ValueBuffer &attribsBuffer
                                );
 
 void GetSurfaceAttribsForVoxel(
@@ -145,10 +151,10 @@ void GetSurfaceAttribsForVoxel(
                                Vec3f pos,
                                float min,
                                float max,
-                               util::PagedArray<SurfaceAttribs>::ValueBuffer &attribsBuffer
+                               util::PagedArray<SurfaceVoxelAttribs>::ValueBuffer &attribsBuffer
                                )
 {
-    SurfaceAttribs myAttribs;
+    SurfaceVoxelAttribs myAttribs;
     myAttribs.pos = pos;
     myAttribs.norm = Vec3f(0);
     float col = math::Abs(*iter) / max;
@@ -162,9 +168,12 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
 {
     if (!obj->helper->grid) return false;
     
-    util::PagedArray<SurfaceAttribs> attribsArray;
-    util::PagedArray<SurfaceAttribs>::ValueBuffer attribsBufferDummy(attribsArray);//dummy used for initialization
-    tbb::enumerable_thread_specific<util::PagedArray<SurfaceAttribs>::ValueBuffer> attribsPool(attribsBufferDummy);//thread local storage pool of ValueBuffers
+    util::CpuTimer timer;
+    timer.start("collect surface attribs vdb");
+    
+    util::PagedArray<SurfaceVoxelAttribs> attribsArray;
+    util::PagedArray<SurfaceVoxelAttribs>::ValueBuffer attribsBufferDummy(attribsArray);//dummy used for initialization
+    tbb::enumerable_thread_specific<util::PagedArray<SurfaceVoxelAttribs>::ValueBuffer> attribsPool(attribsBufferDummy);//thread local storage pool of ValueBuffers
     math::Transform xform = obj->helper->grid->transform();
     
     if (obj->helper->grid->getGridClass() == GRID_LEVEL_SET && !obj->helper->grid->metaValue<bool>("Unsigned"))
@@ -176,10 +185,10 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
         tbb::parallel_for(
                           gradRange,
                           [&xform, &attribsPool, &userColor](tree::IteratorRange<VectorGrid::ValueOnCIter>& range) {
-                              util::PagedArray<SurfaceAttribs>::ValueBuffer &attribsBuffer = attribsPool.local();
+                              util::PagedArray<SurfaceVoxelAttribs>::ValueBuffer &attribsBuffer = attribsPool.local();
                               for ( ; range; ++range){
                                   VectorGrid::ValueOnCIter iter = range.iterator();
-                                  SurfaceAttribs myAttribs;
+                                  SurfaceVoxelAttribs myAttribs;
                                   myAttribs.pos = xform.indexToWorld( iter.getCoord() );
                                   myAttribs.norm = iter.getValue();
                                   myAttribs.col = Vec3f(userColor.x, userColor.y, userColor.z);
@@ -197,7 +206,7 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
         tbb::parallel_for(
                           floatRange,
                           [&xform, &attribsPool, &min, &max, &bgVal](tree::IteratorRange<FloatGrid::ValueOnCIter>& range) {
-                              util::PagedArray<SurfaceAttribs>::ValueBuffer &attribsBuffer = attribsPool.local();
+                              util::PagedArray<SurfaceVoxelAttribs>::ValueBuffer &attribsBuffer = attribsPool.local();
                               for ( ; range; ++range){
                                   FloatGrid::ValueOnCIter iter = range.iterator();
                                   if (*iter !=bgVal && *iter != math::negative(bgVal)) {
@@ -226,6 +235,8 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
                           );
     }
     for (auto i=attribsPool.begin(); i!=attribsPool.end(); ++i) i->flush();
+    
+    timer.stop();
     
     obj->surfaceCnt = Int32(attribsArray.size());
     

@@ -5,7 +5,6 @@
 //  Created by Cody Sorgenfrey on 8/13/18.
 //  Copyright © 2018 MAXON Computer GmbH. All rights reserved.
 //
-//  C4DOpenVDB Primitive object class. Creates parametric shapes out of VDBs.
 
 #include "C4DOpenVDBPrimitive.h"
 #include "C4DOpenVDBFunctions.h" // to get our vdb functions
@@ -119,7 +118,6 @@ Bool C4DOpenVDBPrimitive::Message(GeListNode* node, Int32 type, void* t_data){
     return SUPER::Message(node, type, t_data);
 }
 
-// main routine: build virtual atom objects
 BaseObject* C4DOpenVDBPrimitive::GetVirtualObjects(BaseObject* op, HierarchyHelp* hh)
 {
     if (!op->GetDeformMode())
@@ -219,7 +217,7 @@ BaseObject* C4DOpenVDBPrimitive::GetVirtualObjects(BaseObject* op, HierarchyHelp
     
     if (volumeType == C4DOPENVDB_VDB_SETTINGS_VDB_TYPE_FOG) if (!SDFToFog(helper))
         goto error;
-        
+    
     if (!UpdateSurface(this, op, userColor))
         goto error;
     

@@ -112,7 +112,7 @@ Bool DrawVDB(BaseObject *op, C4DOpenVDBObject *vdb, BaseDraw *bd, BaseDrawHelp *
         if (transperant && !vdb->prevFacingVector.IsZero())
         {
             // if our camera has rotated more that 90 degrees we need to resort our depth
-            if (Dot((camMat.off - op->GetAbsPos()).GetNormalized(), vdb->prevFacingVector.GetNormalized()) <= 0.25)
+            if (Dot((camMat.off - op->GetAbsPos()).GetNormalized(), vdb->prevFacingVector.GetNormalized()) <= 0.5)
                 rebuildBuffer = true;
         }
         

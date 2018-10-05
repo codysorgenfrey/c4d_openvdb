@@ -13,8 +13,6 @@
 #include "C4DOpenVDBObject.h"
 #include "C4DOpenVDBVisualizer.h"
 
-class VDBObjectHelper;
-
 VDBObjectHelper* InitVDBObjectHelper();
 void DeleteVDBObjectHelper(VDBObjectHelper *helper);
 Bool SDFToFog(VDBObjectHelper *helper);
