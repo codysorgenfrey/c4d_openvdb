@@ -286,14 +286,16 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "\"$(inherited) maxon\"";
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_ENABLE_KERNEL_DEVELOPMENT = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_VERSION = "";
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				LD_RUNPATH_SEARCH_PATHS = "";
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				HDSO = ./res;
+				HEADER_SEARCH_PATHS = "$(HT)/include";
+				HT = ./res;
+				LIBRARY_SEARCH_PATHS = "$(HDSO)/lib";
 				MAXON_ROOTDIR = ../../;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
@@ -315,13 +317,6 @@
 				EXECUTABLE_EXTENSION = dylib;
 				GCC_ENABLE_CPP_RTTI = YES;
 				INSTALL_PATH = /.;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/usr/local/Cellar/ilmbase/2.2.1/lib,
-					/usr/local/Cellar/tbb/2018_U5/lib,
-					/usr/local/Cellar/boost/1.67.0_1/lib,
-					/usr/local/Cellar/jemalloc/5.1.0/lib,
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = UnitySanitize;
@@ -336,14 +331,16 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "\"$(inherited) maxon\"";
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_ENABLE_KERNEL_DEVELOPMENT = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_VERSION = "";
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				LD_RUNPATH_SEARCH_PATHS = "";
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				HDSO = ./res;
+				HEADER_SEARCH_PATHS = "$(HT)/include";
+				HT = ./res;
+				LIBRARY_SEARCH_PATHS = "$(HDSO)/lib";
 				MAXON_ROOTDIR = ../../;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
@@ -365,13 +362,6 @@
 				EXECUTABLE_EXTENSION = dylib;
 				GCC_ENABLE_CPP_RTTI = YES;
 				INSTALL_PATH = /.;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/usr/local/Cellar/ilmbase/2.2.1/lib,
-					/usr/local/Cellar/tbb/2018_U5/lib,
-					/usr/local/Cellar/boost/1.67.0_1/lib,
-					/usr/local/Cellar/jemalloc/5.1.0/lib,
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Sanitize;
@@ -386,32 +376,35 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "\"$(inherited) maxon\"";
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_ENABLE_KERNEL_DEVELOPMENT = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_VERSION = "";
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				LD_RUNPATH_SEARCH_PATHS = "";
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				HDSO = ./res;
+				HEADER_SEARCH_PATHS = "$(HT)/include";
+				HT = ./res;
+				LIBRARY_SEARCH_PATHS = "$(HDSO)/lib";
 				MAXON_ROOTDIR = ../../;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"-DOPENVDB_3_ABI_COMPATIBLE",
+					"-DOPENVDB_ABI_VERSION_NUMBER=3",
 					"-fno-math-errno",
 					"-Werror=unused-result",
 					"$(OTHER_CFLAGS)",
 				);
 				OTHER_LDFLAGS = (
-					"-lopenvdb",
-					"-ldl",
-					"-lm",
-					"-lz",
-					"-lHalf",
-					"-ltbb",
 					"-lboost_iostreams",
 					"-lboost_system",
-					"-ltbbmalloc",
+					"-lboost_thread",
+					"-lIlmImf",
+					"-lHalf",
+					"-ltbb",
+					"-lblosc",
+					"-ljemalloc",
+					"-lopenvdb",
 				);
 				PRODUCT_NAME = C4DOpenVDB;
 				USER_HEADER_SEARCH_PATHS = "./source/** ./res ./res/description $(MAXON_ROOTDIR)frameworks/cinema.framework/source/** $(inherited)";
@@ -427,22 +420,35 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EXCLUDED_RECURSIVE_SEARCH_PATH_SUBDIRECTORIES = "\"$(inherited) maxon\"";
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_ENABLE_KERNEL_DEVELOPMENT = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_VERSION = "";
-				HEADER_SEARCH_PATHS = /usr/local/include;
-				LD_RUNPATH_SEARCH_PATHS = "";
-				LIBRARY_SEARCH_PATHS = /usr/local/lib;
+				HDSO = ./res;
+				HEADER_SEARCH_PATHS = "$(HT)/include";
+				HT = ./res;
+				LIBRARY_SEARCH_PATHS = "$(HDSO)/lib";
 				MAXON_ROOTDIR = ../../;
 				OTHER_CPLUSPLUSFLAGS = (
 					"-DOPENVDB_3_ABI_COMPATIBLE",
+					"-DOPENVDB_ABI_VERSION_NUMBER=3",
 					"-fno-math-errno",
 					"-Werror=unused-result",
 					"$(OTHER_CFLAGS)",
 				);
-				OTHER_LDFLAGS = "";
+				OTHER_LDFLAGS = (
+					"-lboost_iostreams",
+					"-lboost_system",
+					"-lboost_thread",
+					"-lIlmImf",
+					"-lHalf",
+					"-ltbb",
+					"-lblosc",
+					"-ljemalloc",
+					"-lopenvdb",
+				);
 				PRODUCT_NAME = C4DOpenVDB;
 				USER_HEADER_SEARCH_PATHS = "./source/** ./res ./res/description $(MAXON_ROOTDIR)frameworks/cinema.framework/source/** $(inherited)";
 			};
@@ -455,13 +461,6 @@
 				EXECUTABLE_EXTENSION = dylib;
 				GCC_ENABLE_CPP_RTTI = YES;
 				INSTALL_PATH = /.;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/usr/local/Cellar/ilmbase/2.2.1/lib,
-					/usr/local/Cellar/tbb/2018_U5/lib,
-					/usr/local/Cellar/boost/1.67.0_1/lib,
-					/usr/local/Cellar/jemalloc/5.1.0/lib,
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -473,13 +472,6 @@
 				EXECUTABLE_EXTENSION = dylib;
 				GCC_ENABLE_CPP_RTTI = YES;
 				INSTALL_PATH = /.;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/usr/local/Cellar/ilmbase/2.2.1/lib,
-					/usr/local/Cellar/tbb/2018_U5/lib,
-					/usr/local/Cellar/boost/1.67.0_1/lib,
-					/usr/local/Cellar/jemalloc/5.1.0/lib,
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

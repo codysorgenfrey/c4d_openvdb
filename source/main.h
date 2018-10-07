@@ -4,6 +4,7 @@
 #include "c4d_basedocument.h"
 #include "c4d.h"
 
+Bool InitVDBLib(void); // defined in C4DOpenVDBFunctions.cpp
 Bool RegisterC4DOpenVDBPrimitive(void);
 Bool RegisterC4DOpenVDBHelp(void);
 Bool RegisterC4DOpenVDBVisualizer(void);

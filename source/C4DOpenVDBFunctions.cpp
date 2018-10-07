@@ -64,6 +64,12 @@ math::Coord GetVoxelPosFromLeaf(FloatGrid::ValueOnCIter iter, int x, int y, int 
 //
 //---------------------------------------------------------------------------------
 
+Bool InitVDBLib(void)
+{
+    initialize();
+    return true;
+}
+
 class VDBObjectHelper
 {
 public:
@@ -76,8 +82,6 @@ public:
 
 VDBObjectHelper* InitVDBObjectHelper()
 {
-    initialize();
-    
     VDBObjectHelper *helper = NewObj(VDBObjectHelper);
     
     return helper;

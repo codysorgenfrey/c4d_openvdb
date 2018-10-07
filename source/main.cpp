@@ -4,7 +4,8 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 
 Bool PluginStart(void)
-{    
+{
+    if (!InitVDBLib()) return false;
     if (!RegisterC4DOpenVDBPrimitive()) return false;
     if (!RegisterC4DOpenVDBHelp()) return false;
     if (!RegisterC4DOpenVDBVisualizer()) return false;
