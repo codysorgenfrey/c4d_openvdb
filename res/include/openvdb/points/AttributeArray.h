@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 //
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )
@@ -127,7 +127,7 @@ public:
     enum Flag {
         TRANSIENT = 0x1,            /// by default not written to disk
         HIDDEN = 0x2,               /// hidden from UIs or iterators
-        OUTOFCORE = 0x4,            /// data not yet loaded from disk
+        OUTOFCORE = 0x4,            /// data not yet loaded from disk (deprecated flag as of ABI=5)
         CONSTANTSTRIDE = 0x8,       /// stride size does not vary in the array
         STREAMING = 0x10            /// streaming mode collapses attributes when first accessed
     };
@@ -296,6 +296,10 @@ protected:
     size_t mCompressedBytes = 0;
     uint8_t mFlags = 0;
     uint8_t mSerializationFlags = 0;
+
+#if OPENVDB_ABI_VERSION_NUMBER >= 5
+    tbb::atomic<Index32> mOutOfCore = 0; // interpreted as bool
+#endif
 
     /// used for out-of-core, paged reading
     compression::PageHandle::Ptr mPageHandle;
@@ -667,6 +671,8 @@ public:
 
     ValueType get(Index n, Index m = 0) const;
 
+    const AttributeArray& array() const;
+
 protected:
     Index index(Index n, Index m) const;
 
@@ -736,6 +742,8 @@ public:
 
     void set(Index n, const ValueType& value);
     void set(Index n, Index m, const ValueType& value);
+
+    AttributeArray& array();
 
 private:
     friend class ::TestAttributeArray;
@@ -904,7 +912,7 @@ TypedAttributeArray<ValueType_, Codec_>::TypedAttributeArray(const TypedAttribut
 
 
 template<typename ValueType_, typename Codec_>
-typename TypedAttributeArray<ValueType_, Codec_>::TypedAttributeArray&
+TypedAttributeArray<ValueType_, Codec_>&
 TypedAttributeArray<ValueType_, Codec_>::operator=(const TypedAttributeArray& rhs)
 {
     if (&rhs != this) {
@@ -1359,7 +1367,11 @@ template<typename ValueType_, typename Codec_>
 bool
 TypedAttributeArray<ValueType_, Codec_>::isOutOfCore() const
 {
+#if OPENVDB_ABI_VERSION_NUMBER >= 5
+    return mOutOfCore;
+#else
     return (mFlags & OUTOFCORE);
+#endif
 }
 
 
@@ -1367,8 +1379,12 @@ template<typename ValueType_, typename Codec_>
 void
 TypedAttributeArray<ValueType_, Codec_>::setOutOfCore(const bool b)
 {
+#if OPENVDB_ABI_VERSION_NUMBER >= 5
+    mOutOfCore = b;
+#else
     if (b) mFlags = static_cast<uint8_t>(mFlags | OUTOFCORE);
     else   mFlags = static_cast<uint8_t>(mFlags & ~OUTOFCORE);
+#endif
 }
 
 
@@ -1426,6 +1442,16 @@ TypedAttributeArray<ValueType_, Codec_>::readMetadata(std::istream& is)
     Index size = Index(0);
     is.read(reinterpret_cast<char*>(&size), sizeof(Index));
     mSize = size;
+
+    // warn if an unknown flag has been set
+    if (mFlags >= 0x20) {
+        OPENVDB_LOG_WARN("Unknown attribute flags for VDB file format.");
+    }
+    // error if an unknown serialization flag has been set,
+    // as this will adjust the layout of the data and corrupt the ability to read
+    if (mSerializationFlags >= 0x10) {
+        OPENVDB_THROW(IoError, "Unknown attribute serialization flags for VDB file format.");
+    }
 
     // read uniform and compressed state
 
@@ -1569,13 +1595,20 @@ TypedAttributeArray<ValueType_, Codec_>::writeMetadata(std::ostream& os, bool ou
 {
     if (!outputTransient && this->isTransient())    return;
 
+#if OPENVDB_ABI_VERSION_NUMBER >= 5
     uint8_t flags(mFlags);
-    uint8_t serializationFlags(mSerializationFlags);
+#else
+    uint8_t flags(mFlags & uint8_t(~OUTOFCORE));
+#endif
+    uint8_t serializationFlags(0);
     Index size(mSize);
     Index stride(mStrideOrTotalSize);
     bool strideOfOne(this->stride() == 1);
 
     bool bloscCompression = io::getDataCompression(os) & io::COMPRESS_BLOSC;
+
+    // any compressed data needs to be loaded if out-of-core
+    if (bloscCompression || this->isCompressed())    this->doLoad();
 
     size_t compressedBytes = 0;
 
@@ -1605,8 +1638,6 @@ TypedAttributeArray<ValueType_, Codec_>::writeMetadata(std::ostream& os, bool ou
     }
     else if (bloscCompression)
     {
-        this->doLoad();
-
         const char* charBuffer = reinterpret_cast<const char*>(mData.get());
         const size_t inBytes = this->arrayMemUsage();
         compressedBytes = compression::bloscCompressedSize(charBuffer, inBytes);
@@ -1735,7 +1766,11 @@ TypedAttributeArray<ValueType_, Codec_>::doLoadUnsafe(const bool compression) co
 
     // clear all write and out-of-core flags
 
+#if OPENVDB_ABI_VERSION_NUMBER >= 5
+    self->mOutOfCore = false;
+#else
     self->mFlags &= uint8_t(~OUTOFCORE);
+#endif
     self->mSerializationFlags &= uint8_t(~WRITEUNIFORM & ~WRITEMEMCOMPRESS & ~WRITEPAGED);
 }
 
@@ -1903,6 +1938,13 @@ AttributeHandle<ValueType, CodecType>::compatibleType() const
 }
 
 template <typename ValueType, typename CodecType>
+const AttributeArray& AttributeHandle<ValueType, CodecType>::array() const
+{
+    assert(mArray);
+    return *mArray;
+}
+
+template <typename ValueType, typename CodecType>
 Index AttributeHandle<ValueType, CodecType>::index(Index n, Index m) const
 {
     Index index = n * mStrideOrTotalSize + m;
@@ -2029,6 +2071,13 @@ AttributeWriteHandle<ValueType, CodecType>::set(Index index, const ValueType& va
     TypedAttributeArray<ValueType, CodecType>::setUnsafe(const_cast<AttributeArray*>(this->mArray), index, value);
 }
 
+template <typename ValueType, typename CodecType>
+AttributeArray& AttributeWriteHandle<ValueType, CodecType>::array()
+{
+    assert(this->mArray);
+    return *const_cast<AttributeArray*>(this->mArray);
+}
+
 
 } // namespace points
 } // namespace OPENVDB_VERSION_NAME
@@ -2036,6 +2085,6 @@ AttributeWriteHandle<ValueType, CodecType>::set(Index index, const ValueType& va
 
 #endif // OPENVDB_POINTS_ATTRIBUTE_ARRAY_HAS_BEEN_INCLUDED
 
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )

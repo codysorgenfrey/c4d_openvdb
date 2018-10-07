@@ -389,8 +389,6 @@
 				MAXON_ROOTDIR = ../../;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
-					"-DOPENVDB_3_ABI_COMPATIBLE",
-					"-DOPENVDB_ABI_VERSION_NUMBER=3",
 					"-fno-math-errno",
 					"-Werror=unused-result",
 					"$(OTHER_CFLAGS)",
@@ -432,8 +430,6 @@
 				LIBRARY_SEARCH_PATHS = "$(HDSO)/lib";
 				MAXON_ROOTDIR = ../../;
 				OTHER_CPLUSPLUSFLAGS = (
-					"-DOPENVDB_3_ABI_COMPATIBLE",
-					"-DOPENVDB_ABI_VERSION_NUMBER=3",
 					"-fno-math-errno",
 					"-Werror=unused-result",
 					"$(OTHER_CFLAGS)",

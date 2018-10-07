@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 //
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )
@@ -39,6 +39,7 @@
 
 #include <iosfwd> // for ostringstream
 #include <openvdb/version.h>
+#include <openvdb/Exceptions.h>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -55,12 +56,25 @@ namespace math {
 template <typename ValueType, typename Less = std::less<ValueType> >
 class MinMax
 {
+    using Limits = std::numeric_limits<ValueType>;
 public:
+
+    /// @brief Empty constructor
+    ///
+    /// @warning Only use this constructor with POD types
+    MinMax() : mMin(Limits::max()), mMax(Limits::lowest())
+    {
+        static_assert(std::numeric_limits<ValueType>::is_specialized,
+                      "openvdb::math::MinMax default constructor requires a std::numeric_limits specialization");
+    }
 
     /// @brief Constructor
     MinMax(const ValueType &min, const ValueType &max) : mMin(min), mMax(max)
     {
     }
+
+    /// @brief Default copy constructor
+    MinMax(const MinMax &other) = default;
 
     /// Add a single sample.
     inline void add(const ValueType &val, const Less &less = Less())
@@ -96,10 +110,10 @@ public:
     }
 
 protected:
-    
+
     ValueType mMin, mMax;
 };//end MinMax
-    
+
 /// @brief This class computes the minimum and maximum values of a population
 /// of floating-point values.
 class Extrema
@@ -386,7 +400,7 @@ private:
     uint64_t mSize;
     double mMin, mMax, mDelta;
     std::vector<uint64_t> mBins;
-};
+};// end Histogram
 
 } // namespace math
 } // namespace OPENVDB_VERSION_NAME
@@ -394,6 +408,6 @@ private:
 
 #endif // OPENVDB_MATH_STATS_HAS_BEEN_INCLUDED
 
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )

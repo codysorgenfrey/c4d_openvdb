@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 //
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )
@@ -36,9 +36,13 @@
 #include <openvdb/io/Compression.h> // for io::readData(), etc.
 #include "Iterator.h"
 #include "LeafBuffer.h"
+#include <algorithm> // for std::nth_element()
 #include <iostream>
 #include <memory>
+#include <sstream>
+#include <string>
 #include <type_traits>
+#include <vector>
 
 
 class TestLeaf;
@@ -101,7 +105,7 @@ public:
                       bool active = false);
 
 
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     /// @brief "Partial creation" constructor used during file input
     /// @param coords  the grid index coordinates of a voxel
     /// @param value   a value with which to fill the buffer
@@ -171,7 +175,7 @@ public:
     /// Return @c true if this node contains only active voxels.
     bool isDense() const { return mValueMask.isOn(); }
 
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     /// Return @c true if memory for this node's buffer has been allocated.
     bool isAllocated() const { return !mBuffer.isOutOfCore() && !mBuffer.empty(); }
     /// Allocate memory for this node's buffer if it has not already been allocated.
@@ -496,6 +500,11 @@ public:
 
     /// Set all voxels within an axis-aligned box to the specified value and active state.
     void fill(const CoordBBox& bbox, const ValueType&, bool active = true);
+    /// Set all voxels within an axis-aligned box to the specified value and active state.
+    void denseFill(const CoordBBox& bbox, const ValueType& value, bool active = true)
+    {
+        this->fill(bbox, value, active);
+    }
 
     /// Set all voxels to the specified value but don't change their active states.
     void fill(const ValueType& value);
@@ -798,6 +807,55 @@ public:
     bool isConstant(ValueType& minValue, ValueType& maxValue,
                     bool& state, const ValueType& tolerance = zeroVal<ValueType>()) const;
 
+
+    /// @brief Computes the median value of all the active AND inactive voxels in this node.
+    /// @return The median value of all values in this node.
+    ///
+    /// @param tmp Optional temporary storage that can hold at least NUM_VALUES values
+    ///            Use of this temporary storage can improve performance
+    ///            when this method is called multiple times.
+    ///
+    /// @note If tmp = this->buffer().data() then the median
+    ///       value is computed very efficiently (in place) but
+    ///       the voxel values in this node are re-shuffeled!
+    ///
+    /// @warning If tmp != nullptr then it is the responsibility of
+    ///          the client code that it points to enough memory to
+    ///          hold NUM_VALUES elements of type ValueType.
+    ValueType medianAll(ValueType *tmp = nullptr) const;
+
+    /// @brief Computes the median value of all the active voxels in this node.
+    /// @return The number of active voxels.
+    ///
+    /// @param value If the return value is non zero @a value is updated
+    ///              with the median value.
+    ///
+    /// @param tmp Optional temporary storage that can hold at least
+    ///            as many values as there are active voxels in this node.
+    ///            Use of this temporary storage can improve performance
+    ///            when this method is called multiple times.
+    ///
+    /// @warning If tmp != nullptr then it is the responsibility of
+    ///          the client code that it points to enough memory to
+    ///          hold the number of active voxels of type ValueType.
+    Index medianOn(ValueType &value, ValueType *tmp = nullptr) const;
+
+    /// @brief Computes the median value of all the inactive voxels in this node.
+    /// @return The number of inactive voxels.
+    ///
+    /// @param value If the return value is non zero @a value is updated
+    ///              with the median value.
+    ///
+    /// @param tmp Optional temporary storage that can hold at least
+    ///            as many values as there are inactive voxels in this node.
+    ///            Use of this temporary storage can improve performance
+    ///            when this method is called multiple times.
+    ///
+    /// @warning If tmp != nullptr then it is the responsibility of
+    ///          the client code that it points to enough memory to
+    ///          hold the number of inactive voxels of type ValueType.
+    Index medianOff(ValueType &value, ValueType *tmp = nullptr) const;
+
     /// Return @c true if all of this node's values are inactive.
     bool isInactive() const { return mValueMask.isOff(); }
 
@@ -902,7 +960,7 @@ LeafNode<T, Log2Dim>::LeafNode(const Coord& xyz, const ValueType& val, bool acti
 }
 
 
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
 template<typename T, Index Log2Dim>
 inline
 LeafNode<T, Log2Dim>::LeafNode(PartialCreate, const Coord& xyz, const ValueType& val, bool active):
@@ -1144,15 +1202,19 @@ template<typename T, Index Log2Dim>
 inline void
 LeafNode<T, Log2Dim>::fill(const CoordBBox& bbox, const ValueType& value, bool active)
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     if (!this->allocate()) return;
 #endif
 
-    for (Int32 x = bbox.min().x(); x <= bbox.max().x(); ++x) {
+    auto clippedBBox = this->getNodeBoundingBox();
+    clippedBBox.intersect(bbox);
+    if (!clippedBBox) return;
+
+    for (Int32 x = clippedBBox.min().x(); x <= clippedBBox.max().x(); ++x) {
         const Index offsetX = (x & (DIM-1u)) << 2*Log2Dim;
-        for (Int32 y = bbox.min().y(); y <= bbox.max().y(); ++y) {
+        for (Int32 y = clippedBBox.min().y(); y <= clippedBBox.max().y(); ++y) {
             const Index offsetXY = offsetX + ((y & (DIM-1u)) << Log2Dim);
-            for (Int32 z = bbox.min().z(); z <= bbox.max().z(); ++z) {
+            for (Int32 z = clippedBBox.min().z(); z <= clippedBBox.max().z(); ++z) {
                 const Index offset = offsetXY + (z & (DIM-1u));
                 mBuffer[offset] = value;
                 mValueMask.set(offset, active);
@@ -1185,7 +1247,7 @@ template<typename DenseT>
 inline void
 LeafNode<T, Log2Dim>::copyToDense(const CoordBBox& bbox, DenseT& dense) const
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     mBuffer.loadValues();
 #endif
 
@@ -1215,7 +1277,7 @@ inline void
 LeafNode<T, Log2Dim>::copyFromDense(const CoordBBox& bbox, const DenseT& dense,
                                     const ValueType& background, const ValueType& tolerance)
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     if (!this->allocate()) return;
 #endif
 
@@ -1300,7 +1362,7 @@ LeafNode<T,Log2Dim>::readBuffers(std::istream& is, const CoordBBox& clipBBox, bo
     SharedPtr<io::StreamMetadata> meta = io::getStreamMetadataPtr(is);
     const bool seekable = meta && meta->seekable();
 
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     std::streamoff maskpos = is.tellg();
 #endif
 
@@ -1328,7 +1390,7 @@ LeafNode<T,Log2Dim>::readBuffers(std::istream& is, const CoordBBox& clipBBox, bo
         mValueMask.setOff();
         mBuffer.setOutOfCore(false);
     } else {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
         // If this node lies completely inside the clipping region and it is being read
         // from a memory-mapped file, delay loading of its buffer until the buffer
         // is actually accessed.  (If this node requires clipping, its buffer
@@ -1359,7 +1421,7 @@ LeafNode<T,Log2Dim>::readBuffers(std::istream& is, const CoordBBox& clipBBox, bo
                 background = *static_cast<const T*>(bgPtr);
             }
             this->clip(clipBBox, background);
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
         }
 #endif
     }
@@ -1479,6 +1541,72 @@ LeafNode<T, Log2Dim>::isConstant(ValueType& minValue,
     return true;
 }
 
+template<typename T, Index Log2Dim>
+inline T
+LeafNode<T, Log2Dim>::medianAll(T *tmp) const
+{
+    std::unique_ptr<T[]> data(nullptr);
+    if (tmp == nullptr) {//allocate temporary storage
+        data.reset(new T[NUM_VALUES]);
+        tmp = data.get();
+    }
+    if (tmp != mBuffer.data()) {
+        const T* src = mBuffer.data();
+        for (T* dst = tmp; dst-tmp < NUM_VALUES;) *dst++ = *src++;
+    }
+    static const size_t midpoint = (NUM_VALUES - 1) >> 1;
+    std::nth_element(tmp, tmp + midpoint, tmp + NUM_VALUES);
+    return tmp[midpoint];
+}
+
+template<typename T, Index Log2Dim>
+inline Index
+LeafNode<T, Log2Dim>::medianOn(T &value, T *tmp) const
+{
+    const Index count = mValueMask.countOn();
+    if (count == NUM_VALUES) {//special case: all voxels are active
+        value = this->medianAll(tmp);
+        return NUM_VALUES;
+    } else if (count == 0) {
+        return 0;
+    }
+    std::unique_ptr<T[]> data(nullptr);
+    if (tmp == nullptr) {//allocate temporary storage
+        data.reset(new T[count]);// 0 < count < NUM_VALUES
+        tmp = data.get();
+    }
+    for (auto iter=this->cbeginValueOn(); iter; ++iter) *tmp++ = *iter;
+    T *begin = tmp - count;
+    const size_t midpoint = (count - 1) >> 1;
+    std::nth_element(begin, begin + midpoint, tmp);
+    value = begin[midpoint];
+    return count;
+}
+
+template<typename T, Index Log2Dim>
+inline Index
+LeafNode<T, Log2Dim>::medianOff(T &value, T *tmp) const
+{
+    const Index count = mValueMask.countOff();
+    if (count == NUM_VALUES) {//special case: all voxels are inactive
+        value = this->medianAll(tmp);
+        return NUM_VALUES;
+    } else if (count == 0) {
+        return 0;
+    }
+    std::unique_ptr<T[]> data(nullptr);
+    if (tmp == nullptr) {//allocate temporary storage
+        data.reset(new T[count]);// 0 < count < NUM_VALUES
+        tmp = data.get();
+    }
+    for (auto iter=this->cbeginValueOff(); iter; ++iter) *tmp++ = *iter;
+    T *begin = tmp - count;
+    const size_t midpoint = (count - 1) >> 1;
+    std::nth_element(begin, begin + midpoint, tmp);
+    value = begin[midpoint];
+    return count;
+}
+
 ////////////////////////////////////////
 
 
@@ -1516,7 +1644,7 @@ inline void
 LeafNode<T, Log2Dim>::resetBackground(const ValueType& oldBackground,
                                       const ValueType& newBackground)
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     if (!this->allocate()) return;
 #endif
 
@@ -1538,7 +1666,7 @@ template<MergePolicy Policy>
 inline void
 LeafNode<T, Log2Dim>::merge(const LeafNode& other)
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     if (!this->allocate()) return;
 #endif
 
@@ -1569,7 +1697,7 @@ template<MergePolicy Policy>
 inline void
 LeafNode<T, Log2Dim>::merge(const ValueType& tileValue, bool tileActive)
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     if (!this->allocate()) return;
 #endif
 
@@ -1616,7 +1744,7 @@ template<typename T, Index Log2Dim>
 inline void
 LeafNode<T, Log2Dim>::negate()
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     if (!this->allocate()) return;
 #endif
     for (Index i = 0; i < SIZE; ++i) {
@@ -1633,7 +1761,7 @@ template<typename CombineOp>
 inline void
 LeafNode<T, Log2Dim>::combine(const LeafNode& other, CombineOp& op)
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     if (!this->allocate()) return;
 #endif
     CombineArgs<T> args;
@@ -1653,7 +1781,7 @@ template<typename CombineOp>
 inline void
 LeafNode<T, Log2Dim>::combine(const ValueType& value, bool valueIsActive, CombineOp& op)
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     if (!this->allocate()) return;
 #endif
     CombineArgs<T> args;
@@ -1676,7 +1804,7 @@ inline void
 LeafNode<T, Log2Dim>::combine2(const LeafNode& other, const OtherType& value,
     bool valueIsActive, CombineOp& op)
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     if (!this->allocate()) return;
 #endif
     CombineArgs<T, OtherType> args;
@@ -1696,7 +1824,7 @@ inline void
 LeafNode<T, Log2Dim>::combine2(const ValueType& value, const OtherNodeT& other,
     bool valueIsActive, CombineOp& op)
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     if (!this->allocate()) return;
 #endif
     CombineArgs<T, typename OtherNodeT::ValueType> args;
@@ -1715,7 +1843,7 @@ template<typename CombineOp, typename OtherNodeT>
 inline void
 LeafNode<T, Log2Dim>::combine2(const LeafNode& b0, const OtherNodeT& b1, CombineOp& op)
 {
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     if (!this->allocate()) return;
 #endif
     CombineArgs<T, typename OtherNodeT::ValueType> args;
@@ -1908,6 +2036,6 @@ operator<<(std::ostream& os, const typename LeafNode<T, Log2Dim>::Buffer& buf)
 
 #endif // OPENVDB_TREE_LEAFNODE_HAS_BEEN_INCLUDED
 
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )

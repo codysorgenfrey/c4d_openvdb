@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 //
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )
@@ -62,8 +62,9 @@
 #include <tbb/task_group.h>
 #include <tbb/task_scheduler_init.h>
 
-#include <boost/integer_traits.hpp> // for const_max
-#include <boost/scoped_array.hpp>
+#include <boost/mpl/at.hpp>
+#include <boost/mpl/int.hpp>
+#include <boost/mpl/size.hpp>
 
 #include <algorithm> // for std::sort()
 #include <cmath> // for std::isfinite(), std::isnan()
@@ -759,7 +760,7 @@ public:
             ijk += step;
         }
 
-        return boost::integer_traits<size_t>::const_max;
+        return std::numeric_limits<size_t>::max();
     }
 
 
@@ -774,15 +775,13 @@ private:
 
 
 template<typename TreeType>
-struct LeafNodeConnectivityTable {
-
-    enum { INVALID_OFFSET = boost::integer_traits<size_t>::const_max };
+struct LeafNodeConnectivityTable
+{
+    enum { INVALID_OFFSET = std::numeric_limits<size_t>::max() };
 
     using LeafNodeType = typename TreeType::LeafNodeType;
 
     LeafNodeConnectivityTable(TreeType& tree)
-        : mLeafNodes()
-        , mOffsets(nullptr)
     {
         mLeafNodes.reserve(tree.leafCount());
         tree.getNodes(mLeafNodes);
@@ -796,7 +795,7 @@ struct LeafNodeConnectivityTable {
 
         // stash the leafnode origin coordinate and temporarily store the
         // linear offset in the origin.x variable.
-        boost::scoped_array<Coord> coordinates(new Coord[mLeafNodes.size()]);
+        std::unique_ptr<Coord[]> coordinates{new Coord[mLeafNodes.size()]};
         tbb::parallel_for(range,
             StashOriginAndStoreOffset<TreeType>(mLeafNodes, coordinates.get()));
 
@@ -828,7 +827,7 @@ struct LeafNodeConnectivityTable {
 
 private:
     std::vector<LeafNodeType*> mLeafNodes;
-    boost::scoped_array<size_t> mOffsets;
+    std::unique_ptr<size_t[]> mOffsets;
 }; // struct LeafNodeConnectivityTable
 
 
@@ -1372,7 +1371,9 @@ struct ComputeIntersectingVoxelSign
     using Int32TreeType = typename TreeType::template ValueConverter<Int32>::Type;
     using Int32LeafNodeType = typename Int32TreeType::LeafNodeType;
 
-    using LocalData = std::pair<boost::shared_array<Vec3d>, boost::shared_array<bool> >;
+    using PointArray = std::unique_ptr<Vec3d[]>;
+    using MaskArray = std::unique_ptr<bool[]>;
+    using LocalData = std::pair<PointArray, MaskArray>;
     using LocalDataTable = tbb::enumerable_thread_specific<LocalData>;
 
     ComputeIntersectingVoxelSign(
@@ -1402,10 +1403,10 @@ struct ComputeIntersectingVoxelSign
 
         LocalData& localData = mLocalDataTable->local();
 
-        boost::shared_array<Vec3d>& points = localData.first;
+        PointArray& points = localData.first;
         if (!points) points.reset(new Vec3d[LeafNodeType::SIZE * 2]);
 
-        boost::shared_array<bool>& mask = localData.second;
+        MaskArray& mask = localData.second;
         if (!mask) mask.reset(new bool[LeafNodeType::SIZE]);
 
 
@@ -3041,9 +3042,9 @@ traceExteriorBoundaries(FloatTreeT& tree)
     const size_t numLeafNodes = nodeConnectivity.size();
     const size_t numVoxels = numLeafNodes * FloatTreeT::LeafNodeType::SIZE;
 
-    boost::scoped_array<bool> changedNodeMaskA(new bool[numLeafNodes]);
-    boost::scoped_array<bool> changedNodeMaskB(new bool[numLeafNodes]);
-    boost::scoped_array<bool> changedVoxelMask(new bool[numVoxels]);
+    std::unique_ptr<bool[]> changedNodeMaskA{new bool[numLeafNodes]};
+    std::unique_ptr<bool[]> changedNodeMaskB{new bool[numLeafNodes]};
+    std::unique_ptr<bool[]> changedVoxelMask{new bool[numVoxels]};
 
     mesh_to_volume_internal::fillArray(changedNodeMaskA.get(), true, numLeafNodes);
     mesh_to_volume_internal::fillArray(changedNodeMaskB.get(), false, numLeafNodes);
@@ -3338,7 +3339,7 @@ meshToVolume(
         nodes.reserve(distTree.leafCount());
         distTree.getNodes(nodes);
 
-        boost::scoped_array<ValueType> buffer(new ValueType[LeafNodeType::SIZE * nodes.size()]);
+        std::unique_ptr<ValueType[]> buffer{new ValueType[LeafNodeType::SIZE * nodes.size()]};
 
         const ValueType offset = ValueType(0.8 * voxelSize);
 
@@ -3401,6 +3402,9 @@ meshToVolume(
 ////////////////////////////////////////
 
 
+//{
+/// @cond OPENVDB_MESH_TO_VOLUME_INTERNAL
+
 /// @internal This overload is enabled only for grids with a scalar, floating-point ValueType.
 template<typename GridType, typename Interrupter>
 inline typename std::enable_if<std::is_floating_point<typename GridType::ValueType>::value,
@@ -3420,7 +3424,7 @@ doMeshConversion(
     }
 
     const size_t numPoints = points.size();
-    boost::scoped_array<Vec3s> indexSpacePoints(new Vec3s[numPoints]);
+    std::unique_ptr<Vec3s[]> indexSpacePoints{new Vec3s[numPoints]};
 
     // transform points to local grid index space
     tbb::parallel_for(tbb::blocked_range<size_t>(0, numPoints),
@@ -3434,20 +3438,22 @@ doMeshConversion(
         QuadAndTriangleDataAdapter<Vec3s, Vec3I>
             mesh(indexSpacePoints.get(), numPoints, &triangles[0], triangles.size());
 
-        return meshToVolume<GridType>(mesh, xform, exBandWidth, inBandWidth, conversionFlags);
+        return meshToVolume<GridType>(
+            interrupter, mesh, xform, exBandWidth, inBandWidth, conversionFlags);
 
     } else if (triangles.empty()) {
 
         QuadAndTriangleDataAdapter<Vec3s, Vec4I>
             mesh(indexSpacePoints.get(), numPoints, &quads[0], quads.size());
 
-        return meshToVolume<GridType>(mesh, xform, exBandWidth, inBandWidth, conversionFlags);
+        return meshToVolume<GridType>(
+            interrupter, mesh, xform, exBandWidth, inBandWidth, conversionFlags);
     }
 
     // pack primitives
 
     const size_t numPrimitives = triangles.size() + quads.size();
-    boost::scoped_array<Vec4I> prims(new Vec4I[numPrimitives]);
+    std::unique_ptr<Vec4I[]> prims{new Vec4I[numPrimitives]};
 
     for (size_t n = 0, N = triangles.size(); n < N; ++n) {
         const Vec3I& triangle = triangles[n];
@@ -3489,6 +3495,9 @@ doMeshConversion(
     OPENVDB_THROW(TypeError,
         "mesh to volume conversion is supported only for scalar floating-point grids");
 }
+
+/// @endcond
+//}
 
 
 ////////////////////////////////////////
@@ -4196,6 +4205,6 @@ createLevelSetBox(const math::BBox<VecType>& bbox,
 
 #endif // OPENVDB_TOOLS_MESH_TO_VOLUME_HAS_BEEN_INCLUDED
 
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )

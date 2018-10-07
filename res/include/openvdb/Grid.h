@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 //
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )
@@ -37,6 +37,7 @@
 #include "io/io.h"
 #include "math/Transform.h"
 #include "tree/Tree.h"
+#include "util/logging.h"
 #include "util/Name.h"
 #include <cassert>
 #include <iostream>
@@ -111,7 +112,7 @@ public:
 
     ~GridBase() override {}
 
-#ifdef OPENVDB_3_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER <= 3
     /// @brief Return a new grid of the same type as this grid and whose
     /// metadata and transform are deep copies of this grid's.
     virtual GridBase::Ptr copyGrid(CopyPolicy treePolicy = CP_SHARE) const = 0;
@@ -208,7 +209,7 @@ public:
     /// (converted to this grid's value type).
     virtual void pruneGrid(float tolerance = 0.0) = 0;
 
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     /// @brief Clip this grid to the given world-space bounding box.
     /// @details Voxels that lie outside the bounding box are set to the background.
     /// @warning Clipping a level set will likely produce a grid that is
@@ -382,7 +383,7 @@ public:
 
     /// Read all data buffers for this grid.
     virtual void readBuffers(std::istream&) = 0;
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     /// Read all of this grid's data buffers that intersect the given index-space bounding box.
     virtual void readBuffers(std::istream&, const CoordBBox&) = 0;
     /// @brief Read all of this grid's data buffers that are not yet resident in memory
@@ -411,7 +412,7 @@ protected:
     /// @brief Deep copy another grid's metadata and transform.
     GridBase(const GridBase& other): MetaMap(other), mTransform(other.mTransform->copy()) {}
 
-#ifdef OPENVDB_3_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER <= 3
     /// @brief Copy another grid's metadata but share its transform.
     GridBase(const GridBase& other, ShallowCopy): MetaMap(other), mTransform(other.mTransform) {}
 #else
@@ -559,7 +560,7 @@ public:
     /// or if this grid's ValueType is not constructible from the other grid's ValueType.
     template<typename OtherTreeType>
     explicit Grid(const Grid<OtherTreeType>&);
-#ifdef OPENVDB_3_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER <= 3
     /// Deep copy another grid's metadata, but share its tree and transform.
     Grid(const Grid&, ShallowCopy);
 #else
@@ -576,13 +577,14 @@ public:
     Grid& operator=(const Grid&) = delete;
 
 
-#ifdef OPENVDB_3_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER <= 3
     //@{
-    /// @brief Return a new grid of the same type as this grid and whose
-    /// metadata and transform are deep copies of this grid's.
-    /// @details If @a treePolicy is @c CP_NEW, give the new grid a new, empty tree;
+    /// @brief Return a new grid of the same type as this grid whose metadata
+    /// is a deep copy of this grid's.
+    /// @details If @a treePolicy is @c CP_NEW, the new grid is given a new, empty tree,
+    /// and it shares its transform with this grid;
     /// if @c CP_SHARE, the new grid shares this grid's tree and transform;
-    /// if @c CP_COPY, the new grid's tree is a deep copy of this grid's tree and transform
+    /// if @c CP_COPY, the new grid's tree and transform are deep copies of this grid's.
     Ptr copy(CopyPolicy treePolicy = CP_SHARE) const;
     GridBase::Ptr copyGrid(CopyPolicy treePolicy = CP_SHARE) const override;
     //@}
@@ -692,20 +694,18 @@ public:
     void fill(const CoordBBox& bbox, const ValueType& value, bool active = true);
     //@}
 
-    /// @brief Set all voxels within a given axis-aligned box to a constant value.
+    /// @brief Set all voxels within a given axis-aligned box to a constant value
+    /// and ensure that those voxels are all represented at the leaf level.
     /// @param bbox    inclusive coordinates of opposite corners of an axis-aligned box.
     /// @param value   the value to which to set voxels within the box.
     /// @param active  if true, mark voxels within the box as active,
     ///                otherwise mark them as inactive.
-    /// @note This operation generates a dense representation of the filled box.
-    /// This implies that active tiles are voxelized, i.e., only active voxels
-    /// are generated from this fill operation.
     void denseFill(const CoordBBox& bbox, const ValueType& value, bool active = true);
 
     /// Reduce the memory footprint of this grid by increasing its sparseness.
     void pruneGrid(float tolerance = 0.0) override;
 
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     /// @brief Clip this grid to the given index-space bounding box.
     /// @details Voxels that lie outside the bounding box are set to the background.
     /// @warning Clipping a level set will likely produce a grid that is
@@ -824,7 +824,7 @@ public:
 
     /// Read all data buffers for this grid.
     void readBuffers(std::istream&) override;
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
     /// Read all of this grid's data buffers that intersect the given index-space bounding box.
     void readBuffers(std::istream&, const CoordBBox&) override;
     /// @brief Read all of this grid's data buffers that are not yet resident in memory
@@ -852,7 +852,14 @@ public:
     /// Return @c true if this grid type is registered.
     static bool isRegistered() { return GridBase::isRegistered(Grid::gridType()); }
     /// Register this grid type along with a factory function.
-    static void registerGrid() { GridBase::registerGrid(Grid::gridType(), Grid::factory); }
+    static void registerGrid()
+    {
+        GridBase::registerGrid(Grid::gridType(), Grid::factory);
+        if (!tree::internal::LeafBufferFlags<ValueType>::IsAtomic) {
+            OPENVDB_LOG_WARN("delayed loading of grids of type " << Grid::gridType()
+                << " might not be threadsafe on this platform");
+        }
+    }
     /// Remove this grid type from the registry.
     static void unregisterGrid() { GridBase::unregisterGrid(Grid::gridType()); }
 
@@ -1149,7 +1156,7 @@ inline Grid<TreeT>::Grid(const Grid<OtherTreeType>& other):
 }
 
 
-#ifdef OPENVDB_3_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER <= 3
 template<typename TreeT>
 inline Grid<TreeT>::Grid(const Grid& other, ShallowCopy):
     GridBase(other, ShallowCopy()),
@@ -1213,7 +1220,7 @@ Grid<TreeT>::create(const GridBase& other)
 ////////////////////////////////////////
 
 
-#ifdef OPENVDB_3_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER <= 3
 
 template<typename TreeT>
 inline typename Grid<TreeT>::Ptr
@@ -1243,7 +1250,7 @@ Grid<TreeT>::copyGrid(CopyPolicy treePolicy) const
     return this->copy(treePolicy);
 }
 
-#else // !OPENVDB_3_ABI_COMPATIBLE
+#else // if OPENVDB_ABI_VERSION_NUMBER > 3
 
 template<typename TreeT>
 inline typename Grid<TreeT>::ConstPtr
@@ -1292,7 +1299,7 @@ Grid<TreeT>::copyGridWithNewTree() const
     return this->copyWithNewTree();
 }
 
-#endif // OPENVDB_3_ABI_COMPATIBLE
+#endif
 
 
 ////////////////////////////////////////
@@ -1351,7 +1358,7 @@ Grid<TreeT>::pruneGrid(float tolerance)
     this->tree().prune(ValueType(zeroVal<ValueType>() + tolerance));
 }
 
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
 template<typename TreeT>
 inline void
 Grid<TreeT>::clip(const CoordBBox& bbox)
@@ -1460,7 +1467,8 @@ Grid<TreeT>::readBuffers(std::istream& is)
         is.read(reinterpret_cast<char*>(&numPasses), sizeof(uint16_t));
         const io::StreamMetadata::Ptr meta = io::getStreamMetadataPtr(is);
         assert(bool(meta));
-        for (uint32_t pass = 0; pass < uint32_t(numPasses); ++pass) {
+        for (uint16_t passIndex = 0; passIndex < numPasses; ++passIndex) {
+            uint32_t pass = (uint32_t(numPasses) << 16) | uint32_t(passIndex);
             meta->setPass(pass);
             tree().readBuffers(is, saveFloatAsHalf());
         }
@@ -1468,7 +1476,7 @@ Grid<TreeT>::readBuffers(std::istream& is)
 }
 
 
-#ifndef OPENVDB_2_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER >= 3
 
 /// @todo Refactor this and the readBuffers() above
 /// once support for ABI 2 compatibility is dropped.
@@ -1483,7 +1491,8 @@ Grid<TreeT>::readBuffers(std::istream& is, const CoordBBox& bbox)
         is.read(reinterpret_cast<char*>(&numPasses), sizeof(uint16_t));
         const io::StreamMetadata::Ptr meta = io::getStreamMetadataPtr(is);
         assert(bool(meta));
-        for (uint32_t pass = 0; pass < uint32_t(numPasses); ++pass) {
+        for (uint16_t passIndex = 0; passIndex < numPasses; ++passIndex) {
+            uint32_t pass = (uint32_t(numPasses) << 16) | uint32_t(passIndex);
             meta->setPass(pass);
             tree().readBuffers(is, saveFloatAsHalf());
         }
@@ -1501,7 +1510,7 @@ Grid<TreeT>::readNonresidentBuffers() const
     tree().readNonresidentBuffers();
 }
 
-#endif // !OPENVDB_2_ABI_COMPATIBLE
+#endif
 
 
 template<typename TreeT>
@@ -1523,7 +1532,8 @@ Grid<TreeT>::writeBuffers(std::ostream& os) const
         meta->setCountingPasses(false);
 
         // Save out the data blocks of the grid.
-        for (uint32_t pass = 0; pass < uint32_t(numPasses); ++pass) {
+        for (uint16_t passIndex = 0; passIndex < numPasses; ++passIndex) {
+            uint32_t pass = (uint32_t(numPasses) << 16) | uint32_t(passIndex);
             meta->setPass(pass);
             tree().writeBuffers(os, saveFloatAsHalf());
         }
@@ -1614,6 +1624,6 @@ createLevelSet(Real voxelSize, Real halfWidth)
 
 #endif // OPENVDB_GRID_HAS_BEEN_INCLUDED
 
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )

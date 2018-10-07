@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 //
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )
@@ -45,6 +45,10 @@
 #include <openvdb/math/Coord.h>
 #include <memory>
 #include <type_traits>
+#if OPENVDB_ABI_VERSION_NUMBER <= 3
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#endif
 
 
 namespace openvdb {
@@ -97,23 +101,28 @@ using math::Vec4d;
 
 // Three-dimensional matrix types
 using Mat3R = math::Mat3<Real>;
+using math::Mat3s;
+using math::Mat3d;
 
 // Four-dimensional matrix types
 using Mat4R = math::Mat4<Real>;
-using Mat4d = math::Mat4<double>;
-using Mat4s = math::Mat4<float>;
+using math::Mat4s;
+using math::Mat4d;
 
 // Quaternions
 using QuatR = math::Quat<Real>;
+using math::Quats;
+using math::Quatd;
 
 // Dummy type for a voxel with a binary mask value, e.g. the active state
 class ValueMask {};
 
 
-#ifdef OPENVDB_3_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER <= 3
 
 // Use Boost shared pointers in OpenVDB 3 ABI compatibility mode.
 template<typename T> using SharedPtr = boost::shared_ptr<T>;
+template<typename T> using WeakPtr = boost::weak_ptr<T>;
 
 template<typename T, typename U> inline SharedPtr<T>
 ConstPtrCast(const SharedPtr<U>& ptr) { return boost::const_pointer_cast<T, U>(ptr); }
@@ -124,10 +133,11 @@ DynamicPtrCast(const SharedPtr<U>& ptr) { return boost::dynamic_pointer_cast<T, 
 template<typename T, typename U> inline SharedPtr<T>
 StaticPtrCast(const SharedPtr<U>& ptr) { return boost::static_pointer_cast<T, U>(ptr); }
 
-#else // if !defined(OPENVDB_3_ABI_COMPATIBLE)
+#else // if OPENVDB_ABI_VERSION_NUMBER > 3
 
 // Use STL shared pointers from OpenVDB 4 on.
 template<typename T> using SharedPtr = std::shared_ptr<T>;
+template<typename T> using WeakPtr = std::weak_ptr<T>;
 
 /// @brief Return a new shared pointer that points to the same object
 /// as the given pointer but with possibly different <TT>const</TT>-ness.
@@ -160,7 +170,7 @@ DynamicPtrCast(const SharedPtr<U>& ptr) { return std::dynamic_pointer_cast<T, U>
 template<typename T, typename U> inline SharedPtr<T>
 StaticPtrCast(const SharedPtr<U>& ptr) { return std::static_pointer_cast<T, U>(ptr); }
 
-#endif // OPENVDB_3_ABI_COMPATIBLE
+#endif
 
 
 ////////////////////////////////////////
@@ -177,6 +187,9 @@ struct PointIndex
     using IntType = IntType_;
 
     PointIndex(IntType i = IntType(0)): mIndex(i) {}
+
+    /// Explicit type conversion constructor
+    template<typename T> explicit PointIndex(T i): mIndex(static_cast<IntType>(i)) {}
 
     operator IntType() const { return mIndex; }
 
@@ -343,6 +356,8 @@ template<> inline const char* typeNameAsString<Vec3i>()             { return "ve
 template<> inline const char* typeNameAsString<Vec3f>()             { return "vec3s"; }
 template<> inline const char* typeNameAsString<Vec3d>()             { return "vec3d"; }
 template<> inline const char* typeNameAsString<std::string>()       { return "string"; }
+template<> inline const char* typeNameAsString<Mat3s>()             { return "mat3s"; }
+template<> inline const char* typeNameAsString<Mat3d>()             { return "mat3d"; }
 template<> inline const char* typeNameAsString<Mat4s>()             { return "mat4s"; }
 template<> inline const char* typeNameAsString<Mat4d>()             { return "mat4d"; }
 template<> inline const char* typeNameAsString<math::Quats>()       { return "quats"; }
@@ -375,8 +390,8 @@ public:
     using BValueT = BValueType;
 
     CombineArgs()
-        : mAValPtr(NULL)
-        , mBValPtr(NULL)
+        : mAValPtr(nullptr)
+        , mBValPtr(nullptr)
         , mResultValPtr(&mResultVal)
         , mAIsActive(false)
         , mBIsActive(false)
@@ -477,7 +492,7 @@ struct SwappedCombineOp
 ////////////////////////////////////////
 
 
-#ifdef OPENVDB_3_ABI_COMPATIBLE
+#if OPENVDB_ABI_VERSION_NUMBER <= 3
 /// In copy constructors, members stored as shared pointers can be handled
 /// in several ways:
 /// <dl>
@@ -560,6 +575,6 @@ class PartialCreate {};
 
 #endif // OPENVDB_TYPES_HAS_BEEN_INCLUDED
 
-// Copyright (c) 2012-2016 DreamWorks Animation LLC
+// Copyright (c) 2012-2018 DreamWorks Animation LLC
 // All rights reserved. This software is distributed under the
 // Mozilla Public License 2.0 ( http://www.mozilla.org/MPL/2.0/ )
