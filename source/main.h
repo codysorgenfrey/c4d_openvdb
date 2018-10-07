@@ -10,5 +10,6 @@ Bool RegisterC4DOpenVDBHelp(void);
 Bool RegisterC4DOpenVDBVisualizer(void);
 Bool RegisterC4DOpenVDBMesher(void);
 Bool RegisterC4DOpenVDBCombine(void);
+Bool RegisterC4DOpenVDBFromPolygons(void);
 
 #endif // MAIN_H__

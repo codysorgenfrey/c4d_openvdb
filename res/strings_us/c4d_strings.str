@@ -8,6 +8,7 @@ STRINGTABLE
     IDS_C4DOpenVDBVisualizer "VDB Visualizer";
     IDS_C4DOpenVDBMesher "VDB Mesher";
     IDS_C4DOpenVDBCombine "VDB Combine";
+    IDS_C4DOpenVDBFromPolygons "VDB From Polygons";
     
     C4DOPENVDB_SURFACE_COUNT "Surface voxels: ";
     C4DOPENVDB_VOXEL_COUNT "Active voxels: ";

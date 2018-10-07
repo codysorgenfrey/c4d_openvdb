@@ -11,7 +11,7 @@ Bool PluginStart(void)
     if (!RegisterC4DOpenVDBVisualizer()) return false;
     if (!RegisterC4DOpenVDBMesher()) return false;
     if (!RegisterC4DOpenVDBCombine()) return false;
-    
+    if (!RegisterC4DOpenVDBFromPolygons()) return false;
     return true;
 }
 

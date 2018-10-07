@@ -16,6 +16,7 @@
 #include "Oc4dopenvdbvisualizer.h" // Enum of ID number constants for UI elements
 #include "Oc4dopenvdbmesher.h" // Enum of ID number constants for UI elements
 #include "Oc4dopenvdbcombine.h" // Enum of ID number constants for UI elements
+#include "Oc4dopenvdbfrompolygons.h" // Enum of ID number constants for UI elements
 #include "c4d_gl.h" //For drawing with OpenGL in c4d
 
 class C4DOpenVDBGenerator : public ObjectData
