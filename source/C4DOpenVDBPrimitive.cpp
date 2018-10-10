@@ -20,9 +20,9 @@ Bool C4DOpenVDBPrimitive::Init(GeListNode* node)
 {
     if (!SUPER::Init(node)) return false;
     
-    node->SetParameter(DescLevel(C4DOPENVDB_VDB_SETTINGS_VOXEL_SIZE), GeData(C4DOPENVDB_DEFAULT_VOXEL_SIZE), DESCFLAGS_SET_0);
-    node->SetParameter(DescLevel(C4DOPENVDB_VDB_SETTINGS_BAND_RADIUS), GeData(C4DOPENVDB_DEFAULT_BAND_WIDTH), DESCFLAGS_SET_0);
-    node->SetParameter(DescLevel(C4DOPENVDB_VDB_SETTINGS_VDB_TYPE), GeData(C4DOPENVDB_VDB_SETTINGS_VDB_TYPE_SDF), DESCFLAGS_SET_0);
+    node->SetParameter(DescLevel(C4DOPENVDB_PRIM_VOXEL_SIZE), GeData(C4DOPENVDB_DEFAULT_VOXEL_SIZE), DESCFLAGS_SET_0);
+    node->SetParameter(DescLevel(C4DOPENVDB_PRIM_BAND_RADIUS), GeData(C4DOPENVDB_DEFAULT_BAND_WIDTH), DESCFLAGS_SET_0);
+    node->SetParameter(DescLevel(C4DOPENVDB_PRIM_VDB_TYPE), GeData(C4DOPENVDB_PRIM_VDB_TYPE_SDF), DESCFLAGS_SET_0);
     node->SetParameter(DescLevel(C4DOPENVDB_PRIM_SETTINGS_TYPE), GeData(C4DOPENVDB_PRIM_SETTINGS_TYPE_SPHERE), DESCFLAGS_SET_0);
     node->SetParameter(DescLevel(C4DOPENVDB_SPHERE_SETTINGS_RADIUS), GeData(100.0), DESCFLAGS_SET_0);
     node->SetParameter(DescLevel(C4DOPENVDB_CUBE_SETTINGS_SIZE), GeData(200.0), DESCFLAGS_SET_0);
@@ -91,20 +91,20 @@ Bool C4DOpenVDBPrimitive::GetDDescription(GeListNode* node, Description* descrip
 
 Bool C4DOpenVDBPrimitive::GetDEnabling(GeListNode *node, const DescID &id, const GeData &t_data, DESCFLAGS_ENABLE flags, const BaseContainer *itemdesc)
 {
-    if (id[0].id == C4DOPENVDB_VDB_SETTINGS_UNSIGNED_DISTANCE_FIELD)
+    if (id[0].id == C4DOPENVDB_PRIM_UNSIGNED_DISTANCE_FIELD)
     {
         GeData myData;
-        node->GetParameter(DescLevel(C4DOPENVDB_VDB_SETTINGS_VDB_TYPE), myData, DESCFLAGS_GET_0);
+        node->GetParameter(DescLevel(C4DOPENVDB_PRIM_VDB_TYPE), myData, DESCFLAGS_GET_0);
         Int32 vdbType = myData.GetInt32();
-        if (vdbType == C4DOPENVDB_VDB_SETTINGS_VDB_TYPE_FOG)
+        if (vdbType == C4DOPENVDB_PRIM_VDB_TYPE_FOG)
         {
             return false;
         }
     }
-    if (id[0].id == C4DOPENVDB_VDB_SETTINGS_VDB_TYPE)
+    if (id[0].id == C4DOPENVDB_PRIM_VDB_TYPE)
     {
         GeData myData;
-        node->GetParameter(DescLevel(C4DOPENVDB_VDB_SETTINGS_UNSIGNED_DISTANCE_FIELD), myData, DESCFLAGS_GET_0);
+        node->GetParameter(DescLevel(C4DOPENVDB_PRIM_UNSIGNED_DISTANCE_FIELD), myData, DESCFLAGS_GET_0);
         Bool UDF = myData.GetBool();
         if (UDF)
         {
@@ -112,10 +112,6 @@ Bool C4DOpenVDBPrimitive::GetDEnabling(GeListNode *node, const DescID &id, const
         }
     }
     return SUPER::GetDEnabling(node, id, t_data, flags, itemdesc);
-}
-
-Bool C4DOpenVDBPrimitive::Message(GeListNode* node, Int32 type, void* t_data){
-    return SUPER::Message(node, type, t_data);
 }
 
 BaseObject* C4DOpenVDBPrimitive::GetVirtualObjects(BaseObject* op, HierarchyHelp* hh)
@@ -152,19 +148,19 @@ BaseObject* C4DOpenVDBPrimitive::GetVirtualObjects(BaseObject* op, HierarchyHelp
     op->GetParameter(DescLevel(C4DOPENVDB_PRIM_SETTINGS_TYPE), myData, DESCFLAGS_GET_0);
     primType = myData.GetInt32();
     
-    op->GetParameter(DescLevel(C4DOPENVDB_VDB_SETTINGS_VOXEL_SIZE), myData, DESCFLAGS_GET_0);
+    op->GetParameter(DescLevel(C4DOPENVDB_PRIM_VOXEL_SIZE), myData, DESCFLAGS_GET_0);
     voxelSize = myData.GetFloat();
     
-    op->GetParameter(DescLevel(C4DOPENVDB_VDB_SETTINGS_BAND_RADIUS), myData, DESCFLAGS_GET_0);
+    op->GetParameter(DescLevel(C4DOPENVDB_PRIM_BAND_RADIUS), myData, DESCFLAGS_GET_0);
     bandWidth = myData.GetFloat();
     
-    op->GetParameter(DescLevel(C4DOPENVDB_VDB_SETTINGS_VDB_TYPE), myData, DESCFLAGS_GET_0);
+    op->GetParameter(DescLevel(C4DOPENVDB_PRIM_VDB_TYPE), myData, DESCFLAGS_GET_0);
     volumeType = myData.GetInt32();
     
-    op->GetParameter(DescLevel(C4DOPENVDB_VDB_SETTINGS_FILL_INTERIOR), myData, DESCFLAGS_GET_0);
+    op->GetParameter(DescLevel(C4DOPENVDB_PRIM_FILL_INTERIOR), myData, DESCFLAGS_GET_0);
     fillInterior = myData.GetBool();
     
-    op->GetParameter(DescLevel(C4DOPENVDB_VDB_SETTINGS_UNSIGNED_DISTANCE_FIELD), myData, DESCFLAGS_GET_0);
+    op->GetParameter(DescLevel(C4DOPENVDB_PRIM_UNSIGNED_DISTANCE_FIELD), myData, DESCFLAGS_GET_0);
     unsignedDF = myData.GetBool();
     
     op->GetParameter(DescLevel(ID_BASEOBJECT_USECOLOR), myData, DESCFLAGS_GET_0);
@@ -215,8 +211,9 @@ BaseObject* C4DOpenVDBPrimitive::GetVirtualObjects(BaseObject* op, HierarchyHelp
     if (unsignedDF) if (!UnsignSDF(helper))
         goto error;
     
-    if (volumeType == C4DOPENVDB_VDB_SETTINGS_VDB_TYPE_FOG) if (!SDFToFog(helper))
-        goto error;
+    if (volumeType == C4DOPENVDB_PRIM_VDB_TYPE_FOG)
+        if (!SDFToFog(helper))
+            goto error;
     
     if (!UpdateSurface(this, op, userColor))
         goto error;

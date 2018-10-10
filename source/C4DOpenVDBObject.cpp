@@ -348,18 +348,7 @@ Bool C4DOpenVDBObject::Init(GeListNode* node)
     if (!SUPER::Init(node))
         return false;
     
-    helper = InitVDBObjectHelper();
-    subBuffer = nullptr;
-    surfaceAttribs = nullptr;
-    surfaceCnt = 0;
-    voxelCnt = 0;
-    voxelSize = 0.0f;
-    gridClass = C4DOPENVDB_GRID_CLASS_SDF;
-    gridName = "None";
-    gridType = "None";
-    isSlaveOfMaster = false;
-    UDF = false;
-    prevFacingVector = Vector(0);
+    ClearSurface(this, false); // set up our new VDB surface
     
     node->SetParameter(DescLevel(C4DOPENVDB_DISPLAY_SHAPE), GeData(C4DOPENVDB_DISPLAY_SHAPE_SQUARE), DESCFLAGS_SET_0);
     
@@ -438,7 +427,8 @@ void C4DOpenVDBObject::Free(GeListNode *node)
     DeleteObj(vectorInfoArray);
     DeleteObj(attribInfoArray);
     
-    if (helper) DeleteVDBObjectHelper(helper);
+    if (helper)
+        ClearSurface(this, true);
     
     SUPER::Free(node);
 }

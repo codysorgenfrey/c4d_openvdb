@@ -18,6 +18,8 @@ public:
     static NodeData* Alloc(void) { return NewObjClear(C4DOpenVDBFromPolygons); }
     virtual Bool Init(GeListNode* node);
     virtual void Free(GeListNode* node);
+    virtual Bool GetDEnabling(GeListNode *node, const DescID &id, const GeData &t_data, DESCFLAGS_ENABLE flags, const BaseContainer *itemdesc);
+    virtual BaseObject* GetVirtualObjects(BaseObject* op, HierarchyHelp* hh);
 };
 
 

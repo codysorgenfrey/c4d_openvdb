@@ -2,6 +2,23 @@ CONTAINER Oc4dopenvdbfrompolygons {
     INCLUDE Obase;
     NAME Oc4dopenvdbfrompolygons;
     GROUP ID_OBJECTPROPERTIES {
-
+        GROUP C4DOPENVDB_FROMPOLYGONS_GROUP {
+            DEFAULT 1;
+            GROUP{
+                COLUMNS 2;
+                REAL C4DOPENVDB_FROMPOLYGONS_VOXEL_SIZE { UNIT METER; DEFAULT 4.0; STEP 0.1; MIN 0.0; MINEX; }
+            }
+            LONG C4DOPENVDB_FROMPOLYGONS_VDB_TYPE {
+                CYCLE
+                {
+                    C4DOPENVDB_FROMPOLYGONS_VDB_TYPE_SDF;
+                    C4DOPENVDB_FROMPOLYGONS_VDB_TYPE_FOG;
+                }
+            }
+            REAL C4DOPENVDB_FROMPOLYGONS_IN_BAND_RADIUS { DEFAULT 3.0; MIN 1.0; STEP 1.0; MINEX; }
+            REAL C4DOPENVDB_FROMPOLYGONS_EX_BAND_RADIUS { DEFAULT 3.0; MIN 1.0; STEP 1.0; MINEX; }
+            BOOL C4DOPENVDB_FROMPOLYGONS_FILL_INTERIOR { DEFAULT 0; }
+            BOOL C4DOPENVDB_FROMPOLYGONS_UNSIGNED_DISTANCE_FIELD { DEFAULT 0; }
+        }
     }
 }

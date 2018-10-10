@@ -13,12 +13,11 @@
 #include "C4DOpenVDBObject.h"
 #include "C4DOpenVDBVisualizer.h"
 
-VDBObjectHelper* InitVDBObjectHelper();
-void DeleteVDBObjectHelper(VDBObjectHelper *helper);
 Bool SDFToFog(VDBObjectHelper *helper);
 Bool FillSDFInterior(VDBObjectHelper *helper);
 Bool UnsignSDF(VDBObjectHelper *helper);
 Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor);
+void ClearSurface(C4DOpenVDBObject *obj, Bool free);
 
 // C4DOpenVDBPrimitive Functions
 Bool MakeShape(VDBObjectHelper *helper, Int32 shape, float width, Vector center, float voxelSize, float bandWidth);
@@ -42,5 +41,14 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
                  Bool prune,
                  Float pruneVal,
                  Bool signedFloodFill);
+
+// C4DOpenVDBFromPolygons Functions
+Bool VDBFromPolygons(VDBObjectHelper *helper,
+                     BaseObject *hClone,
+                     Float voxelSize,
+                     Float inBandWidth,
+                     Float exBandWidth,
+                     Bool fill,
+                     Bool UDF);
 
 #endif /* C4DOpenVDBFunctions_h */

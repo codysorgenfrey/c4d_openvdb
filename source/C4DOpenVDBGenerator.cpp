@@ -20,6 +20,7 @@ Bool ValidVDBType(Int32 type)
     switch (type) {
         case Oc4dopenvdbprimitive:
         case Oc4dopenvdbcombine:
+        case Oc4dopenvdbfrompolygons:
             return true;
             
         default:

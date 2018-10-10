@@ -20,6 +20,7 @@
 #include <openvdb/tools/Composite.h> // for combining grids
 #include <openvdb/tools/LevelSetRebuild.h> // for doLevelSetRebuild
 #include <openvdb/util/CpuTimer.h> // for profiling
+#include <openvdb/tools/MeshToVolume.h> // for mesh to volume and MeshDataAdapter struct
 
 using namespace openvdb;
 
@@ -80,18 +81,6 @@ public:
     inline VDBObjectHelper(void){ grid = nullptr; };
 };
 
-VDBObjectHelper* InitVDBObjectHelper()
-{
-    VDBObjectHelper *helper = NewObj(VDBObjectHelper);
-    
-    return helper;
-}
-
-void DeleteVDBObjectHelper(VDBObjectHelper *helper)
-{
-    DeleteObj(helper);
-}
-
 Bool SDFToFog(VDBObjectHelper *helper)
 {
     tools::sdfToFogVolume(*helper->grid);
@@ -105,7 +94,7 @@ Bool FillSDFInterior(VDBObjectHelper *helper)
     if (!helper->grid) return false;
     
     float inBand = std::numeric_limits<float>::max();
-    float exBand = helper->grid->metaValue<float>("Band Width");
+    float exBand = helper->grid->metaValue<float>("Ext Band Width");
     float iso = tools::lsutilGridZero<FloatGrid>();
     FloatGrid::Ptr outGrid = tools::levelSetRebuild(*helper->grid, iso, exBand, inBand, &helper->grid->transform());
     
@@ -172,9 +161,6 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
 {
     if (!obj->helper->grid) return false;
     
-    util::CpuTimer timer;
-    timer.start("collect surface attribs vdb");
-    
     util::PagedArray<SurfaceVoxelAttribs> attribsArray;
     util::PagedArray<SurfaceVoxelAttribs>::ValueBuffer attribsBufferDummy(attribsArray);//dummy used for initialization
     tbb::enumerable_thread_specific<util::PagedArray<SurfaceVoxelAttribs>::ValueBuffer> attribsPool(attribsBufferDummy);//thread local storage pool of ValueBuffers
@@ -239,9 +225,7 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
                           );
     }
     for (auto i=attribsPool.begin(); i!=attribsPool.end(); ++i) i->flush();
-    
-    timer.stop();
-    
+        
     obj->surfaceCnt = Int32(attribsArray.size());
     
     DeleteMem(obj->surfaceAttribs);
@@ -289,6 +273,25 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
     return true;
 }
 
+void ClearSurface(C4DOpenVDBObject *obj, Bool free)
+{
+    if (obj->helper)
+        DeleteObj(obj->helper);
+    if (!free)
+        obj->helper = NewObj(VDBObjectHelper);
+    obj->subBuffer = nullptr;
+    obj->surfaceAttribs = nullptr;
+    obj->surfaceCnt = 0;
+    obj->voxelCnt = 0;
+    obj->voxelSize = 0.0f;
+    obj->gridClass = C4DOPENVDB_GRID_CLASS_SDF;
+    obj->gridName = "None";
+    obj->gridType = "None";
+    obj->isSlaveOfMaster = false;
+    obj->UDF = false;
+    obj->prevFacingVector = Vector(0);
+}
+
 Bool MakeShape(VDBObjectHelper *helper, Int32 shape, float width, Vector center, float voxelSize, float bandWidth)
 {
     switch (shape) {
@@ -322,7 +325,8 @@ Bool MakeShape(VDBObjectHelper *helper, Int32 shape, float width, Vector center,
     helper->grid->setGridClass(GRID_LEVEL_SET);
     helper->grid->setName("surface");
     helper->grid->insertMeta("Unsigned", BoolMetadata(false));
-    helper->grid->insertMeta("Band Width", FloatMetadata(bandWidth));
+    helper->grid->insertMeta("Int Band Width", FloatMetadata(bandWidth * 0.5));
+    helper->grid->insertMeta("Ext Band Width", FloatMetadata(bandWidth * 0.5));
     
     return true;
 }
@@ -755,6 +759,84 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
         tools::prune(gridA->tree(), (gridZero + pruneVal));
 end:
     obj->helper->grid = gridA;
+    return true;
+}
+
+struct MeshDataAdapter {
+private:
+    PolygonObject *mesh;
+    const Vector *pointsArr;
+    const CPolygon *polyArr;
+    math::Transform xform;
+    Matrix ml;
+public:
+    MeshDataAdapter(PolygonObject *in, math::Transform inX){
+        mesh = in;
+        pointsArr = in->GetPointR();
+        polyArr = in->GetPolygonR();
+        xform = inX;
+        ml = in->GetMl();
+    };
+    size_t polygonCount() const;        // Total number of polygons
+    size_t pointCount() const;          // Total number of points
+    size_t vertexCount(size_t n) const; // Vertex count for polygon n
+    void getIndexSpacePoint(size_t n, size_t v, openvdb::Vec3d& pos) const; // Return position pos in local grid index space for polygon n and vertex v
+};
+
+size_t MeshDataAdapter::polygonCount() const
+{
+    return size_t(mesh->GetPolygonCount());
+}
+
+size_t MeshDataAdapter::pointCount() const
+{
+    return size_t(mesh->GetPointCount());
+}
+
+size_t MeshDataAdapter::vertexCount(size_t n) const
+{
+    if (polyArr[(int)n].IsTriangle())
+        return 3;
+    else
+        return 4;
+}
+
+void MeshDataAdapter::getIndexSpacePoint(size_t n, size_t v, Vec3d &pos) const
+{
+    Vector c4dPos = pointsArr[ polyArr[(int)n].operator[]((int)v) ];
+    c4dPos = ml * c4dPos; // put the point into our generator's space
+    pos.operator=( xform.worldToIndex( Vec3d(c4dPos.x, c4dPos.y, c4dPos.z) ) );
+}
+
+Bool VDBFromPolygons(VDBObjectHelper *helper,
+                     BaseObject *hClone,
+                     Float voxelSize,
+                     Float inBandWidth,
+                     Float exBandWidth,
+                     Bool fill,
+                     Bool UDF)
+{
+    math::Transform::Ptr xform;
+    int flags = 0;
+    PolygonObject *poly = static_cast<PolygonObject*>(hClone);
+    
+    if (!poly)
+        return false;
+    
+    xform = math::Transform::createLinearTransform(voxelSize);
+    
+    MeshDataAdapter md(poly, *xform);
+    
+    if (UDF)
+        flags |= tools::UNSIGNED_DISTANCE_FIELD;
+    
+    helper->grid = tools::meshToVolume<FloatGrid>(md, *xform, inBandWidth, exBandWidth, flags);
+    
+    helper->grid->setGridClass(GRID_LEVEL_SET);
+    helper->grid->setName("surface");
+    helper->grid->insertMeta("Unsigned", BoolMetadata(UDF));
+    helper->grid->insertMeta("Int Band Width", FloatMetadata(inBandWidth));
+    helper->grid->insertMeta("Ext Band Width", FloatMetadata(exBandWidth));
     
     return true;
 }
