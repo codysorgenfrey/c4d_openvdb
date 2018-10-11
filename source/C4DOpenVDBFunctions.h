@@ -48,7 +48,6 @@ Bool VDBFromPolygons(VDBObjectHelper *helper,
                      Float voxelSize,
                      Float inBandWidth,
                      Float exBandWidth,
-                     Bool fill,
                      Bool UDF);
 
 #endif /* C4DOpenVDBFunctions_h */

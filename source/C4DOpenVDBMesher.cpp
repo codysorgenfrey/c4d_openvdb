@@ -68,7 +68,11 @@ BaseObject* C4DOpenVDBMesher::GetVirtualObjects(BaseObject* op, HierarchyHelp* h
     op->GetParameter(DescLevel(C4DOPENVDB_MESHER_ADAPT), mydata, DESCFLAGS_GET_0);
     adapt = mydata.GetFloat();
     
+    StatusSetSpin();
+    
     if (!GetVDBPolygonized(inObject, iso, adapt, outObject)) goto error;
+    
+    StatusClear();
     
     blDelete(hClone);
     

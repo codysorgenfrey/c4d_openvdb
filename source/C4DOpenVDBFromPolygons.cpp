@@ -125,12 +125,13 @@ BaseObject* C4DOpenVDBFromPolygons::GetVirtualObjects(BaseObject* op, HierarchyH
         userColor = (Vector32)myData.GetVector();
     }
     
-    if (!VDBFromPolygons(helper, hClone, voxelSize, inBandWidth, exBandWidth, fillInterior, unsignedDF))
-        goto error;
-    
     if (fillInterior)
-        if (!FillSDFInterior(helper))
-            goto error;
+        inBandWidth = LIMIT<Float>::Max();
+    
+    StatusSetSpin();
+    
+    if (!VDBFromPolygons(helper, hClone, voxelSize, inBandWidth, exBandWidth, unsignedDF))
+        goto error;
     
     if (volumeType == C4DOPENVDB_FROMPOLYGONS_VDB_TYPE_FOG)
         if (!SDFToFog(helper))
@@ -138,6 +139,8 @@ BaseObject* C4DOpenVDBFromPolygons::GetVirtualObjects(BaseObject* op, HierarchyH
     
     if (!UpdateSurface(this, op, userColor))
         goto error;
+    
+    StatusClear();
     
     return outObject;
     

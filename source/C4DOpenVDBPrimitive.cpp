@@ -202,6 +202,9 @@ BaseObject* C4DOpenVDBPrimitive::GetVirtualObjects(BaseObject* op, HierarchyHelp
     }
     
     width = myData.GetFloat();
+    
+    StatusSetSpin();
+    
     if (!MakeShape(helper, primType, width, center, voxelSize, bandWidth))
         goto error;
     
@@ -217,6 +220,8 @@ BaseObject* C4DOpenVDBPrimitive::GetVirtualObjects(BaseObject* op, HierarchyHelp
     
     if (!UpdateSurface(this, op, userColor))
         goto error;
+    
+    StatusClear();
     
     return outObject;
     

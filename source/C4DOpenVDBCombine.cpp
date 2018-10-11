@@ -133,6 +133,8 @@ BaseObject* C4DOpenVDBCombine::GetVirtualObjects(BaseObject* op, HierarchyHelp* 
     op->GetParameter(DescLevel(C4DOPENVDB_COMBINE_SIGN_FLOOD_FILL), mydata, DESCFLAGS_GET_0);
     signedFloodFill = mydata.GetBool();
     
+    StatusSetSpin();
+    
     if (!CombineVDBs(this,
                      &inputs,
                      aMult,
@@ -159,6 +161,8 @@ BaseObject* C4DOpenVDBCombine::GetVirtualObjects(BaseObject* op, HierarchyHelp* 
     
     if (!UpdateSurface(this, op, userColor))
         goto error;
+    
+    StatusClear();
     
     blDelete(hClone);
     

@@ -36,6 +36,8 @@ math::Coord GetVoxelPosFromLeaf(FloatGrid::ValueOnCIter iter, int x, int y, int 
 
 Bool UpdateGridTransform(Matrix mat, FloatGrid &grid)
 {
+    StatusSetText("Updating transform: " + String(grid.getName().c_str()));
+    
     math::Transform::Ptr xform = grid.transformPtr();
     Vec4d v1(mat.v1.x, mat.v1.y, mat.v1.z, 0);
     Vec4d v2(mat.v2.x, mat.v2.y, mat.v2.z, 0);
@@ -83,6 +85,8 @@ public:
 
 Bool SDFToFog(VDBObjectHelper *helper)
 {
+    StatusSetText("Converting to fog volume");
+    
     tools::sdfToFogVolume(*helper->grid);
     helper->grid->setGridClass(GRID_FOG_VOLUME);
     helper->grid->setName("density");
@@ -92,6 +96,8 @@ Bool SDFToFog(VDBObjectHelper *helper)
 Bool FillSDFInterior(VDBObjectHelper *helper)
 {
     if (!helper->grid) return false;
+    
+    StatusSetText("Filling interior");
     
     float inBand = std::numeric_limits<float>::max();
     float exBand = helper->grid->metaValue<float>("Ext Band Width");
@@ -111,6 +117,8 @@ Bool FillSDFInterior(VDBObjectHelper *helper)
 Bool UnsignSDF(VDBObjectHelper *helper)
 {
     if (!helper->grid) return false;
+    
+    StatusSetText("Converting to unsigned");
     
     struct unsignSDF
     {
@@ -160,6 +168,8 @@ void GetSurfaceAttribsForVoxel(
 Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
 {
     if (!obj->helper->grid) return false;
+    
+    StatusSetText("Updating surface");
     
     util::PagedArray<SurfaceVoxelAttribs> attribsArray;
     util::PagedArray<SurfaceVoxelAttribs>::ValueBuffer attribsBufferDummy(attribsArray);//dummy used for initialization
@@ -294,6 +304,8 @@ void ClearSurface(C4DOpenVDBObject *obj, Bool free)
 
 Bool MakeShape(VDBObjectHelper *helper, Int32 shape, float width, Vector center, float voxelSize, float bandWidth)
 {
+    StatusSetText("Generating VDB");
+    
     switch (shape) {
         case C4DOPENVDB_PRIM_SETTINGS_TYPE_SPHERE:
             helper->grid = tools::createLevelSetSphere<FloatGrid>(width, Vec3f(center.x, center.y, center.z), voxelSize, bandWidth);
@@ -471,6 +483,8 @@ Bool GetVDBPolygonized(BaseObject *inObject, Float iso, Float adapt, BaseObject 
     if (!vdb || !vdb->helper->grid)
         return false;
     
+    StatusSetText("Generating mesh");
+    
     gridCopy = vdb->helper->grid->deepCopy();
     
     UpdateGridTransform(inObject->GetMl(), *gridCopy);
@@ -545,6 +559,8 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
             iter.setValue(*iter * m);
         }
     };
+    
+    StatusSetText("Generating VDB");
     
     for (Int32 x = 0; x < inputs->GetCount(); x++)
     {
@@ -813,15 +829,17 @@ Bool VDBFromPolygons(VDBObjectHelper *helper,
                      Float voxelSize,
                      Float inBandWidth,
                      Float exBandWidth,
-                     Bool fill,
                      Bool UDF)
 {
     math::Transform::Ptr xform;
     int flags = 0;
+    float interior = float(inBandWidth);
     PolygonObject *poly = static_cast<PolygonObject*>(hClone);
     
     if (!poly)
         return false;
+    
+    StatusSetText("Generating VDB");
     
     xform = math::Transform::createLinearTransform(voxelSize);
     
@@ -830,7 +848,7 @@ Bool VDBFromPolygons(VDBObjectHelper *helper,
     if (UDF)
         flags |= tools::UNSIGNED_DISTANCE_FIELD;
     
-    helper->grid = tools::meshToVolume<FloatGrid>(md, *xform, inBandWidth, exBandWidth, flags);
+    helper->grid = tools::meshToVolume<FloatGrid>(md, *xform, exBandWidth, interior, flags);
     
     helper->grid->setGridClass(GRID_LEVEL_SET);
     helper->grid->setName("surface");
