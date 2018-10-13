@@ -79,8 +79,8 @@ BaseObject* C4DOpenVDBCombine::GetVirtualObjects(BaseObject* op, HierarchyHelp* 
     Float                                 deactivateVal, pruneVal, aMult, bMult;
     Vector32                              userColor;
     
+    outObject = GetDummyPolygon(); // dummy output object
     dirty = false;
-    outObject = GetDummyPolygon();
     hClone = nullptr;
     doc = hh->GetDocument();
     userColor = Vector32(C4DOPENVDB_DEFAULT_COLOR);
@@ -169,9 +169,10 @@ BaseObject* C4DOpenVDBCombine::GetVirtualObjects(BaseObject* op, HierarchyHelp* 
     return outObject;
     
 error:
-    FreeSlaves(doc);
     blDelete(outObject);
     blDelete(hClone);
+    FreeSlaves(doc);
+    StatusClear();
     return nullptr;
 }
 

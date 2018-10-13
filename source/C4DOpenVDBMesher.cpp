@@ -37,8 +37,8 @@ BaseObject* C4DOpenVDBMesher::GetVirtualObjects(BaseObject* op, HierarchyHelp* h
     Bool             dirty;
     Float            iso, adapt;
     
-    dirty = false;
     outObject = BaseObject::Alloc(Onull);
+    dirty = false;
     hClone = nullptr;
     
     inObject = op->GetDown();
@@ -79,9 +79,10 @@ BaseObject* C4DOpenVDBMesher::GetVirtualObjects(BaseObject* op, HierarchyHelp* h
     return outObject;
     
 error:
-    FreeSlaves(hh->GetDocument());
     blDelete(outObject);
     blDelete(hClone);
+    FreeSlaves(hh->GetDocument());
+    StatusClear();
     return nullptr;
 }
 

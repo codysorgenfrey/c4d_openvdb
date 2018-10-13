@@ -21,6 +21,8 @@
 #include <openvdb/tools/LevelSetRebuild.h> // for doLevelSetRebuild
 #include <openvdb/util/CpuTimer.h> // for profiling
 #include <openvdb/tools/MeshToVolume.h> // for mesh to volume and MeshDataAdapter struct
+#include <openvdb/tools/LevelSetFilter.h> // for levelSetFilter
+#include <openvdb/tools/Filter.h> // for Filter
 
 using namespace openvdb;
 
@@ -209,7 +211,7 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
                               util::PagedArray<SurfaceVoxelAttribs>::ValueBuffer &attribsBuffer = attribsPool.local();
                               for ( ; range; ++range){
                                   FloatGrid::ValueOnCIter iter = range.iterator();
-                                  if (*iter !=bgVal && *iter != math::negative(bgVal)) {
+                                  if (*iter != bgVal && *iter != math::negative(bgVal)) {
                                       if (iter.isVoxelValue())
                                       {
                                           Vec3f pos = xform.indexToWorld( iter.getCoord() );
@@ -302,7 +304,7 @@ void ClearSurface(C4DOpenVDBObject *obj, Bool free)
     obj->prevFacingVector = Vector(0);
 }
 
-Bool MakeShape(VDBObjectHelper *helper, Int32 shape, float width, Vector center, float voxelSize, float bandWidth)
+Bool MakeShape(VDBObjectHelper *helper, Int32 shape, Float width, Vector center, Float voxelSize, Int32 bandWidth)
 {
     StatusSetText("Generating VDB");
     
@@ -827,13 +829,15 @@ void MeshDataAdapter::getIndexSpacePoint(size_t n, size_t v, Vec3d &pos) const
 Bool VDBFromPolygons(VDBObjectHelper *helper,
                      BaseObject *hClone,
                      Float voxelSize,
-                     Float inBandWidth,
-                     Float exBandWidth,
-                     Bool UDF)
+                     Int32 inBandWidth,
+                     Int32 exBandWidth,
+                     Bool UDF,
+                     Bool fill)
 {
     math::Transform::Ptr xform;
     int flags = 0;
     float interior = float(inBandWidth);
+    float exterior = float(exBandWidth);
     PolygonObject *poly = static_cast<PolygonObject*>(hClone);
     
     if (!poly)
@@ -847,14 +851,70 @@ Bool VDBFromPolygons(VDBObjectHelper *helper,
     
     if (UDF)
         flags |= tools::UNSIGNED_DISTANCE_FIELD;
+    if (fill)
+        exterior = std::numeric_limits<float>::max();
     
-    helper->grid = tools::meshToVolume<FloatGrid>(md, *xform, exBandWidth, interior, flags);
+    helper->grid = tools::meshToVolume<FloatGrid>(md, *xform, exterior, interior, flags);
     
     helper->grid->setGridClass(GRID_LEVEL_SET);
     helper->grid->setName("surface");
     helper->grid->insertMeta("Unsigned", BoolMetadata(UDF));
     helper->grid->insertMeta("Int Band Width", FloatMetadata(inBandWidth));
     helper->grid->insertMeta("Ext Band Width", FloatMetadata(exBandWidth));
+    
+    return true;
+}
+
+Bool SmoothVDB(VDBObjectHelper *helper, C4DOpenVDBObject *obj, Int32 operation, Int32 filter, Int32 iter, Int32 renorm)
+{
+    if (!obj->helper->grid)
+        return false;
+    
+    StatusSetText("Smoothing VDB");
+    
+    helper->grid = obj->helper->grid->deepCopy();
+    
+    if (obj->helper->grid->getGridClass() == GRID_LEVEL_SET)
+    {
+        tools::LevelSetFilter<FloatGrid> lsFilter(*helper->grid);
+        lsFilter.setTemporalScheme(math::TemporalIntegrationScheme::TVD_RK1);
+        switch (renorm)
+        {
+            default:
+            case C4DOPENVDB_SMOOTH_RENORM_FIRST:
+                lsFilter.setSpatialScheme(math::BiasedGradientScheme::FIRST_BIAS);
+                break;
+                
+            case C4DOPENVDB_SMOOTH_RENORM_SEC:
+                lsFilter.setSpatialScheme(math::BiasedGradientScheme::SECOND_BIAS);
+                break;
+                
+            case C4DOPENVDB_SMOOTH_RENORM_FIFTH:
+                lsFilter.setSpatialScheme(math::BiasedGradientScheme::HJWENO5_BIAS);
+                break;
+        }
+        for (Int32 x = 0; x < iter; x++)
+        {
+            switch (operation) {
+                case C4DOPENVDB_SMOOTH_OP_MEAN: lsFilter.mean(filter); break;
+                case C4DOPENVDB_SMOOTH_OP_GAUS: lsFilter.gaussian(filter); break;
+                case C4DOPENVDB_SMOOTH_OP_MED: lsFilter.median(filter); break;
+                case C4DOPENVDB_SMOOTH_OP_MEANFLOW: lsFilter.meanCurvature(); break;
+                case C4DOPENVDB_SMOOTH_OP_LAP: lsFilter.laplacian(); break;
+                default: break;
+            }
+        }
+    }
+    else
+    {
+        tools::Filter<FloatGrid> vdbFilter(*helper->grid);
+        switch (operation) {
+            case C4DOPENVDB_SMOOTH_OP_MEAN: vdbFilter.mean(filter, iter); break;
+            case C4DOPENVDB_SMOOTH_OP_GAUS: vdbFilter.gaussian(filter, iter); break;
+            case C4DOPENVDB_SMOOTH_OP_MED: vdbFilter.median(filter, iter); break;
+            default: break;
+        }
+    }
     
     return true;
 }

@@ -65,19 +65,16 @@ BaseObject* C4DOpenVDBFromPolygons::GetVirtualObjects(BaseObject* op, HierarchyH
         return nullptr;
     
     GeData     myData;
-    Int32      volumeType;
-    Float      inBandWidth, exBandWidth, voxelSize;
+    Int32      volumeType, inBandWidth, exBandWidth;
+    Float      voxelSize;
     Vector     center;
     Vector32   userColor;
-    Bool       fillInterior, unsignedDF, useColor, cache, dirty;
+    Bool       fillInterior, unsignedDF, useColor, dirty;
     BaseObject *outObject, *inObject, *hClone;
     
-    // dummy output object
-    outObject = GetDummyPolygon();
-    
-    cache = op->CheckCache(hh);
-    dirty = op->IsDirty(DIRTYFLAGS_DATA);
-    
+    outObject = GetDummyPolygon(); // dummy output object
+    dirty = false;
+    hClone = nullptr;
     inBandWidth = C4DOPENVDB_DEFAULT_BAND_WIDTH;
     exBandWidth = C4DOPENVDB_DEFAULT_BAND_WIDTH;
     voxelSize = C4DOPENVDB_DEFAULT_VOXEL_SIZE;
@@ -95,17 +92,14 @@ BaseObject* C4DOpenVDBFromPolygons::GetVirtualObjects(BaseObject* op, HierarchyH
         return hClone;
     }
     
-    if (!helper)
-        goto error;
-    
     op->GetParameter(DescLevel(C4DOPENVDB_FROMPOLYGONS_VOXEL_SIZE), myData, DESCFLAGS_GET_0);
     voxelSize = myData.GetFloat();
     
     op->GetParameter(DescLevel(C4DOPENVDB_FROMPOLYGONS_IN_BAND_RADIUS), myData, DESCFLAGS_GET_0);
-    inBandWidth = myData.GetFloat();
+    inBandWidth = myData.GetInt32();
     
     op->GetParameter(DescLevel(C4DOPENVDB_FROMPOLYGONS_EX_BAND_RADIUS), myData, DESCFLAGS_GET_0);
-    exBandWidth = myData.GetFloat();
+    exBandWidth = myData.GetInt32();
     
     op->GetParameter(DescLevel(C4DOPENVDB_FROMPOLYGONS_VDB_TYPE), myData, DESCFLAGS_GET_0);
     volumeType = myData.GetInt32();
@@ -125,12 +119,9 @@ BaseObject* C4DOpenVDBFromPolygons::GetVirtualObjects(BaseObject* op, HierarchyH
         userColor = (Vector32)myData.GetVector();
     }
     
-    if (fillInterior)
-        inBandWidth = LIMIT<Float>::Max();
-    
     StatusSetSpin();
     
-    if (!VDBFromPolygons(helper, hClone, voxelSize, inBandWidth, exBandWidth, unsignedDF))
+    if (!VDBFromPolygons(helper, hClone, voxelSize, inBandWidth, exBandWidth, unsignedDF, fillInterior))
         goto error;
     
     if (volumeType == C4DOPENVDB_FROMPOLYGONS_VDB_TYPE_FOG)
@@ -146,7 +137,9 @@ BaseObject* C4DOpenVDBFromPolygons::GetVirtualObjects(BaseObject* op, HierarchyH
     
 error:
     blDelete(outObject);
+    blDelete(hClone);
     ClearSurface(this, false);
+    StatusClear();
     return nullptr;
 }
 

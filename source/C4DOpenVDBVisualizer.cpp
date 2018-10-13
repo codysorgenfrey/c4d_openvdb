@@ -335,8 +335,8 @@ BaseObject* C4DOpenVDBVisualizer::GetVirtualObjects(BaseObject* op, HierarchyHel
     Gradient         *grad;
     InitRenderStruct irs;
     
+    outObject = GetDummyPolygon(); // dummy output object
     dirty = false;
-    outObject = GetDummyPolygon();
     hClone = nullptr;
     
     op->GetParameter(DescLevel(C4DOPENVDB_VIS_OBJECT), mydata, DESCFLAGS_GET_0);
@@ -392,12 +392,12 @@ BaseObject* C4DOpenVDBVisualizer::GetVirtualObjects(BaseObject* op, HierarchyHel
     return outObject;
     
 error:
+    blDelete(outObject);
+    blDelete(hClone);
     FreeSlaves(hh->GetDocument());
     surfaceCnt = 0;
     voxelSize = 0.0;
     DeleteMem(sliceAttribs);
-    blDelete(outObject);
-    blDelete(hClone);
     return nullptr;
 }
 

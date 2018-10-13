@@ -85,7 +85,7 @@ Bool DrawVDB(BaseObject *op, C4DOpenVDBObject *vdb, BaseDraw *bd, BaseDrawHelp *
         userColor = bd->ConvertColor(Vector(C4DOPENVDB_DEFAULT_COLOR));
     }
     
-    transperant = (vdb->UDF || vdb->gridClass == C4DOPENVDB_GRID_CLASS_FOG) && displayType != C4DOPENVDB_DISPLAY_SHAPE_DOT;
+    transperant = (vdb->UDF || vdb->gridClass == C4DOPENVDB_GRID_CLASS_FOG) && displayType == C4DOPENVDB_DISPLAY_SHAPE_SQUARE;
     
     bEOGL = false;
     
@@ -195,7 +195,7 @@ Bool DrawVDB(BaseObject *op, C4DOpenVDBObject *vdb, BaseDraw *bd, BaseDrawHelp *
             pFactory->AddLine(FragmentProgram, "vec3 V = normalize(eyeposition - worldcoord.xyz);");
             if (lightCnt)
             {
-                pFactory->AddLine(FragmentProgram, "if (normal != vec4(0,0,0,1)){");
+                pFactory->AddLine(FragmentProgram, "if ("+vdb->displayTypeFragUni+" == "+GlString(C4DOPENVDB_DISPLAY_SHAPE_SQUARE)+" && normal != vec4(0,0,0,1)){");
                 pFactory->AddLine(FragmentProgram, "    ocolor = vec4(0.0);");
                 pFactory->StartLightLoop();
                 pFactory->AddLine(FragmentProgram, "    ocolor.rgb += icolor.rgb * lightcolorD.rgb * max(0, dot(normal.xyz, L.xyz));");
@@ -216,7 +216,7 @@ Bool DrawVDB(BaseObject *op, C4DOpenVDBObject *vdb, BaseDraw *bd, BaseDrawHelp *
             pFactory->AddLine(FragmentProgram, "if (normal != vec4(0,0,0,1)){"); // if not transperency
             pFactory->AddLine(FragmentProgram, "    ocolor.a = icolor.a;");
             pFactory->AddLine(FragmentProgram, "} else {");
-            pFactory->AddLine(FragmentProgram, "    ocolor.a = 0.025;");
+            pFactory->AddLine(FragmentProgram, "    ocolor.a = icolor.r * 0.025;"); // take transparency from r channel
             pFactory->AddLine(FragmentProgram, "}");
             pFactory->AddLine(FragmentProgram, "if ("+vdb->backFaceUni+" > 0) if (dot(normal.xyz, V) < 0.0) discard;");
             pFactory->CompilePrograms();
@@ -261,7 +261,7 @@ _no_eogl:;
     if (!bEOGL)
     {
         if (transperant)
-            bd->SetTransparency(-240);
+            displayType = C4DOPENVDB_DISPLAY_SHAPE_DOT;
         
         switch (displayType)
         {
@@ -273,19 +273,19 @@ _no_eogl:;
                     Vector *polyCol = NewMem(Vector, 4);
                     Vector *polyNor = NewMem(Vector, 4);
                     Vector32 V = ((Vector32)bd->GetMg().off - vdb->surfaceAttribs[x].pos).GetNormalized();
-                    Float32 colBrightness = Max(Float32(0.0), Dot(vdb->surfaceAttribs[x].norm, V));
-                    
+                    Float32 colBrightness = Abs(Dot(vdb->surfaceAttribs[x].norm, V));
+
                     polyPoints[0] = (Vector)vdb->surfaceAttribs[x].pos + (camMat.v1 * -0.5 * vdb->voxelSize) + (camMat.v2 * -0.5 * vdb->voxelSize);
-                    polyCol[0] = bd->ConvertColor((Vector)vdb->surfaceAttribs[x].col * colBrightness);
+                    polyCol[0] = (Vector)vdb->surfaceAttribs[x].col * colBrightness;
                     
                     polyPoints[1] = (Vector)vdb->surfaceAttribs[x].pos + (camMat.v1 * 0.5 * vdb->voxelSize) + (camMat.v2 * -0.5 * vdb->voxelSize);
-                    polyCol[1] = bd->ConvertColor((Vector)vdb->surfaceAttribs[x].col * colBrightness);
+                    polyCol[1] = (Vector)vdb->surfaceAttribs[x].col * colBrightness;
                     
                     polyPoints[2] = (Vector)vdb->surfaceAttribs[x].pos + (camMat.v1 * 0.5 * vdb->voxelSize) + (camMat.v2 * 0.5 * vdb->voxelSize);
-                    polyCol[2] = bd->ConvertColor((Vector)vdb->surfaceAttribs[x].col * colBrightness);
+                    polyCol[2] = (Vector)vdb->surfaceAttribs[x].col * colBrightness;
                     
                     polyPoints[3] = (Vector)vdb->surfaceAttribs[x].pos + (camMat.v1 * -0.5 * vdb->voxelSize) + (camMat.v2 * 0.5 * vdb->voxelSize);
-                    polyCol[3] = bd->ConvertColor((Vector)vdb->surfaceAttribs[x].col * colBrightness);
+                    polyCol[3] = (Vector)vdb->surfaceAttribs[x].col * colBrightness;
                     
                     polyNor[0] = polyNor[1] = polyNor[2] = polyNor[3] = CalcFaceNormal(polyPoints, CPolygon(0,1,2,3));
                     
@@ -301,7 +301,7 @@ _no_eogl:;
             {
                 for (x=0; x< vdb->surfaceCnt; x++)
                 {
-                    bd->DrawBox(MatrixMove((Vector)vdb->surfaceAttribs[x].pos), vdb->voxelSize/2, bd->ConvertColor((Vector)vdb->surfaceAttribs[x].col), true);
+                    bd->DrawBox(MatrixMove((Vector)vdb->surfaceAttribs[x].pos), vdb->voxelSize/2, (Vector)vdb->surfaceAttribs[x].col, true);
                 }
                 break;
             }
@@ -320,7 +320,7 @@ _no_eogl:;
                 Vector32 *voxelP = NewMem(Vector32, vdb->surfaceCnt);
                 for (x=0; x < vdb->surfaceCnt; x++)
                 {
-                    Vector32 cLin = (Vector32)bd->ConvertColor((Vector)vdb->surfaceAttribs[x].col);
+                    Vector32 cLin = (Vector32)vdb->surfaceAttribs[x].col;
                     c[x*3] = cLin.x;
                     c[(x*3)+1] = cLin.y;
                     c[(x*3)+2] = cLin.z;

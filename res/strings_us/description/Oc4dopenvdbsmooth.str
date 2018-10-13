@@ -1,0 +1,15 @@
+STRINGTABLE Oc4dopenvdbsmooth {
+    Oc4dopenvdbsmooth "VDB Smooth";
+    C4DOPENVDB_SMOOTH_OP "Operation";
+    C4DOPENVDB_SMOOTH_OP_MEAN "Mean Value";
+    C4DOPENVDB_SMOOTH_OP_GAUS "Gaussian";
+    C4DOPENVDB_SMOOTH_OP_MEAD "Median Value";
+    C4DOPENVDB_SMOOTH_OP_MEANFLOW "Mean Curvature Flow";
+    C4DOPENVDB_SMOOTH_OP_LAP "Laplacian Flow";
+    C4DOPENVDB_SMOOTH_FILTER "Filter Voxel Radius";
+    C4DOPENVDB_SMOOTH_ITER "Iterations";
+    C4DOPENVDB_SMOOTH_RENORM "Renorm Accuracy";
+    C4DOPENVDB_SMOOTH_RENORM_FIRST "First Order Upwinding";
+    C4DOPENVDB_SMOOTH_RENORM_SEC "Second Order Upwinding";
+    C4DOPENVDB_SMOOTH_RENORM_FIFTH "Fifth Order HJ-WENO";
+}

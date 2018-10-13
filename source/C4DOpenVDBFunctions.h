@@ -20,7 +20,7 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor);
 void ClearSurface(C4DOpenVDBObject *obj, Bool free);
 
 // C4DOpenVDBPrimitive Functions
-Bool MakeShape(VDBObjectHelper *helper, Int32 shape, float width, Vector center, float voxelSize, float bandWidth);
+Bool MakeShape(VDBObjectHelper *helper, Int32 shape, Float width, Vector center, Float voxelSize, Int32 bandWidth);
 
 // C4DOpenVDBVisualizer Functions
 Bool UpdateVisualizerSlice(C4DOpenVDBObject *vdb, C4DOpenVDBVisualizer *vis, Int32 axis, Float offset, Gradient *grad);
@@ -46,8 +46,12 @@ Bool CombineVDBs(C4DOpenVDBObject *obj,
 Bool VDBFromPolygons(VDBObjectHelper *helper,
                      BaseObject *hClone,
                      Float voxelSize,
-                     Float inBandWidth,
-                     Float exBandWidth,
-                     Bool UDF);
+                     Int32 inBandWidth,
+                     Int32 exBandWidth,
+                     Bool UDF,
+                     Bool fill);
+
+// C4DOpenVDBSmooth Functions
+Bool SmoothVDB(VDBObjectHelper *helper, C4DOpenVDBObject *obj, Int32 operation, Int32 filter, Int32 iter, Int32 renorm);
 
 #endif /* C4DOpenVDBFunctions_h */

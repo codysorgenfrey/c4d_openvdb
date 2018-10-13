@@ -120,8 +120,8 @@ BaseObject* C4DOpenVDBPrimitive::GetVirtualObjects(BaseObject* op, HierarchyHelp
         return nullptr;
     
     GeData     myData;
-    Int32      primType, volumeType;
-    Float      width = 100.0, bandWidth = 1.0, voxelSize = 4.0;
+    Int32      primType, volumeType, bandWidth;
+    Float      width, voxelSize;
     Vector     center = Vector(0);
     Vector32   userColor;
     Bool       fillInterior, unsignedDF, useColor, cache, dirty;
@@ -152,7 +152,7 @@ BaseObject* C4DOpenVDBPrimitive::GetVirtualObjects(BaseObject* op, HierarchyHelp
     voxelSize = myData.GetFloat();
     
     op->GetParameter(DescLevel(C4DOPENVDB_PRIM_BAND_RADIUS), myData, DESCFLAGS_GET_0);
-    bandWidth = myData.GetFloat();
+    bandWidth = myData.GetInt32();
     
     op->GetParameter(DescLevel(C4DOPENVDB_PRIM_VDB_TYPE), myData, DESCFLAGS_GET_0);
     volumeType = myData.GetInt32();
@@ -227,6 +227,8 @@ BaseObject* C4DOpenVDBPrimitive::GetVirtualObjects(BaseObject* op, HierarchyHelp
     
 error:
     blDelete(outObject);
+    ClearSurface(this, false);
+    StatusClear();
     return nullptr;
 }
 

@@ -16,6 +16,8 @@
 		057C079120FB2000006A8F41 /* C4DOpenVDBObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 057C079020FB2000006A8F41 /* C4DOpenVDBObject.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
 		05886E062169D72B001F9379 /* C4DOpenVDBFromPolygons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05886E042169D72B001F9379 /* C4DOpenVDBFromPolygons.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
 		05886E072169D72B001F9379 /* C4DOpenVDBFromPolygons.h in Headers */ = {isa = PBXBuildFile; fileRef = 05886E052169D72B001F9379 /* C4DOpenVDBFromPolygons.h */; };
+		05886E0A216F14FA001F9379 /* C4DOpenVDBSmooth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05886E08216F14FA001F9379 /* C4DOpenVDBSmooth.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
+		05886E0B216F14FA001F9379 /* C4DOpenVDBSmooth.h in Headers */ = {isa = PBXBuildFile; fileRef = 05886E09216F14FA001F9379 /* C4DOpenVDBSmooth.h */; };
 		059E91592137C4EF00472B23 /* C4DOpenVDBHelp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 059E91572137C4EF00472B23 /* C4DOpenVDBHelp.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
 		059E915A2137C4EF00472B23 /* C4DOpenVDBHelp.h in Headers */ = {isa = PBXBuildFile; fileRef = 059E91582137C4EF00472B23 /* C4DOpenVDBHelp.h */; };
 		059E915E213F5BE100472B23 /* C4DOpenVDBVisualizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 059E915C213F5BE100472B23 /* C4DOpenVDBVisualizer.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
@@ -64,6 +66,8 @@
 		057C079020FB2000006A8F41 /* C4DOpenVDBObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBObject.cpp; path = source/C4DOpenVDBObject.cpp; sourceTree = SOURCE_ROOT; };
 		05886E042169D72B001F9379 /* C4DOpenVDBFromPolygons.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBFromPolygons.cpp; path = source/C4DOpenVDBFromPolygons.cpp; sourceTree = SOURCE_ROOT; };
 		05886E052169D72B001F9379 /* C4DOpenVDBFromPolygons.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBFromPolygons.h; path = source/C4DOpenVDBFromPolygons.h; sourceTree = SOURCE_ROOT; };
+		05886E08216F14FA001F9379 /* C4DOpenVDBSmooth.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBSmooth.cpp; path = source/C4DOpenVDBSmooth.cpp; sourceTree = SOURCE_ROOT; };
+		05886E09216F14FA001F9379 /* C4DOpenVDBSmooth.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBSmooth.h; path = source/C4DOpenVDBSmooth.h; sourceTree = SOURCE_ROOT; };
 		059E91572137C4EF00472B23 /* C4DOpenVDBHelp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBHelp.cpp; path = source/C4DOpenVDBHelp.cpp; sourceTree = SOURCE_ROOT; };
 		059E91582137C4EF00472B23 /* C4DOpenVDBHelp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBHelp.h; path = source/C4DOpenVDBHelp.h; sourceTree = SOURCE_ROOT; };
 		059E915C213F5BE100472B23 /* C4DOpenVDBVisualizer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBVisualizer.cpp; path = source/C4DOpenVDBVisualizer.cpp; sourceTree = SOURCE_ROOT; };
@@ -152,6 +156,8 @@
 				05A4BDC92158B4E800BA66F9 /* C4DOpenVDBCombine.cpp */,
 				05886E052169D72B001F9379 /* C4DOpenVDBFromPolygons.h */,
 				05886E042169D72B001F9379 /* C4DOpenVDBFromPolygons.cpp */,
+				05886E09216F14FA001F9379 /* C4DOpenVDBSmooth.h */,
+				05886E08216F14FA001F9379 /* C4DOpenVDBSmooth.cpp */,
 			);
 			name = source;
 			path = ../source;
@@ -182,6 +188,7 @@
 				050A85282102C8C600A7008B /* C4DOpenVDBFunctions.h in Headers */,
 				05886E072169D72B001F9379 /* C4DOpenVDBFromPolygons.h in Headers */,
 				05113031214CDDD500C2C578 /* C4DOpenVDBGenerator.h in Headers */,
+				05886E0B216F14FA001F9379 /* C4DOpenVDBSmooth.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -261,6 +268,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				057C079120FB2000006A8F41 /* C4DOpenVDBObject.cpp in Sources */,
+				05886E0A216F14FA001F9379 /* C4DOpenVDBSmooth.cpp in Sources */,
 				050A85272102C8C600A7008B /* C4DOpenVDBFunctions.cpp in Sources */,
 				05A4BDC621586A4F00BA66F9 /* C4DOpenVDBMesher.cpp in Sources */,
 				054816152121E5FF0008ABDE /* C4DOpenVDBPrimitive.cpp in Sources */,

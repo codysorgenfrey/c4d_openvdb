@@ -7,6 +7,7 @@ enum
     IDS_C4DOpenVDBMesher,
     IDS_C4DOpenVDBCombine,
     IDS_C4DOpenVDBFromPolygons,
+    IDS_C4DOpenVDBSmooth,
     
     C4DOPENVDB_SEPARATOR = 150,
     C4DOPENVDB_SURFACE_COUNT = 1000,
