@@ -111,7 +111,7 @@ BaseObject* C4DOpenVDBSmooth::GetVirtualObjects(BaseObject* op, HierarchyHelp* h
     
     StatusSetSpin();
     
-    if (!SmoothVDB(helper, vdb, operation, filter, iter, renorm))
+    if (!FilterVDB(helper, vdb, operation, filter, iter, renorm))
         goto error;
     
     if (!UpdateSurface(this, op, userColor))

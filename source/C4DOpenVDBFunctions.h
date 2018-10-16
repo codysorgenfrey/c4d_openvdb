@@ -51,7 +51,7 @@ Bool VDBFromPolygons(VDBObjectHelper *helper,
                      Bool UDF,
                      Bool fill);
 
-// C4DOpenVDBSmooth Functions
-Bool SmoothVDB(VDBObjectHelper *helper, C4DOpenVDBObject *obj, Int32 operation, Int32 filter, Int32 iter, Int32 renorm);
+// Filter Function (C4DOpenVDBSmooth, C4DOpenVDBReshape)
+Bool FilterVDB(VDBObjectHelper *helper, C4DOpenVDBObject *obj, Int32 operation, Int32 filter, Int32 iter, Int32 renorm);
 
 #endif /* C4DOpenVDBFunctions_h */

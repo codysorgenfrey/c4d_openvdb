@@ -12,5 +12,6 @@ Bool RegisterC4DOpenVDBMesher(void);
 Bool RegisterC4DOpenVDBCombine(void);
 Bool RegisterC4DOpenVDBFromPolygons(void);
 Bool RegisterC4DOpenVDBSmooth(void);
+Bool RegisterC4DOpenVDBReshape(void);
 
 #endif // MAIN_H__

@@ -70,7 +70,8 @@ BaseObject* C4DOpenVDBMesher::GetVirtualObjects(BaseObject* op, HierarchyHelp* h
     
     StatusSetSpin();
     
-    if (!GetVDBPolygonized(inObject, iso, adapt, outObject)) goto error;
+    if (!GetVDBPolygonized(inObject, iso, adapt, outObject))
+        goto error;
     
     StatusClear();
     

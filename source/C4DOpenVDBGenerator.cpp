@@ -22,6 +22,7 @@ Bool ValidVDBType(Int32 type)
         case Oc4dopenvdbcombine:
         case Oc4dopenvdbfrompolygons:
         case Oc4dopenvdbsmooth:
+        case Oc4dopenvdbreshape:
             return true;
             
         default:

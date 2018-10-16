@@ -10,6 +10,7 @@ STRINGTABLE
     IDS_C4DOpenVDBCombine "VDB Combine";
     IDS_C4DOpenVDBFromPolygons "VDB From Polygons";
     IDS_C4DOpenVDBSmooth "VDB Smooth";
+    IDS_C4DOpenVDBReshape "VDB Reshape";
     
     C4DOPENVDB_SURFACE_COUNT "Surface voxels: ";
     C4DOPENVDB_VOXEL_COUNT "Active voxels: ";

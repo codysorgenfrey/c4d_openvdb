@@ -507,14 +507,21 @@ Bool GetVDBPolygonized(BaseObject *inObject, Float iso, Float adapt, BaseObject 
     polyArr = polyObj->GetPolygonW();
     for (Int32 x = 0; x < quads.size(); x++)
     {
-        polyArr[x] = CPolygon(quads[x].x(), quads[x].y(), quads[x].z(), quads[x].w());
+        polyArr[x] = CPolygon(quads[x].w(), quads[x].z(), quads[x].y(), quads[x].x());
     }
     
     // set tris
     for (Int32 x = 0; x < tris.size(); x++)
     {
-        polyArr[x + quads.size()] = CPolygon(tris[x].x(), tris[x].y(), tris[x].z());
+        polyArr[x + quads.size()] = CPolygon(tris[x].z(), tris[x].y(), tris[x].x());
     }
+    
+    BaseTag *phong = polyObj->MakeTag(Tphong);
+    if (!phong)
+        return false;
+    
+    phong->SetParameter(DescLevel(PHONGTAG_PHONG_ANGLELIMIT), GeData(true), DESCFLAGS_SET_0);
+    phong->SetParameter(DescLevel(PHONGTAG_PHONG_USEEDGES), GeData(true), DESCFLAGS_SET_0);
     
     polyObj->InsertUnder(outObject);
     
@@ -865,12 +872,12 @@ Bool VDBFromPolygons(VDBObjectHelper *helper,
     return true;
 }
 
-Bool SmoothVDB(VDBObjectHelper *helper, C4DOpenVDBObject *obj, Int32 operation, Int32 filter, Int32 iter, Int32 renorm)
+Bool FilterVDB(VDBObjectHelper *helper, C4DOpenVDBObject *obj, Int32 operation, Int32 filter, Int32 iter, Int32 renorm)
 {
     if (!obj->helper->grid)
         return false;
     
-    StatusSetText("Smoothing VDB");
+    StatusSetText("Filtering VDB");
     
     helper->grid = obj->helper->grid->deepCopy();
     
@@ -901,6 +908,10 @@ Bool SmoothVDB(VDBObjectHelper *helper, C4DOpenVDBObject *obj, Int32 operation, 
                 case C4DOPENVDB_SMOOTH_OP_MED: lsFilter.median(filter); break;
                 case C4DOPENVDB_SMOOTH_OP_MEANFLOW: lsFilter.meanCurvature(); break;
                 case C4DOPENVDB_SMOOTH_OP_LAP: lsFilter.laplacian(); break;
+                case C4DOPENVDB_RESHAPE_OP_DILATE: lsFilter.offset(float(-1) * filter); break;
+                case C4DOPENVDB_RESHAPE_OP_ERODE: lsFilter.offset(filter); break;
+                case C4DOPENVDB_RESHAPE_OP_OPEN: lsFilter.offset(float(-1) * filter); lsFilter.offset(filter); break;
+                case C4DOPENVDB_RESHAPE_OP_CLOSE: lsFilter.offset(filter); lsFilter.offset(float(-1) * filter); break;
                 default: break;
             }
         }

@@ -13,6 +13,7 @@ Bool PluginStart(void)
     if (!RegisterC4DOpenVDBCombine()) return false;
     if (!RegisterC4DOpenVDBFromPolygons()) return false;
     if (!RegisterC4DOpenVDBSmooth()) return false;
+    if (!RegisterC4DOpenVDBReshape()) return false;
     return true;
 }
 

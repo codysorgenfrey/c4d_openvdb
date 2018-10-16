@@ -14,6 +14,8 @@
 		054816152121E5FF0008ABDE /* C4DOpenVDBPrimitive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 054816132121E5FF0008ABDE /* C4DOpenVDBPrimitive.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
 		054816162121E5FF0008ABDE /* C4DOpenVDBPrimitive.h in Headers */ = {isa = PBXBuildFile; fileRef = 054816142121E5FF0008ABDE /* C4DOpenVDBPrimitive.h */; };
 		057C079120FB2000006A8F41 /* C4DOpenVDBObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 057C079020FB2000006A8F41 /* C4DOpenVDBObject.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
+		0584D4402174F37E0078D479 /* C4DOpenVDBReshape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0584D43F2174F37E0078D479 /* C4DOpenVDBReshape.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
+		0584D4422174F3870078D479 /* C4DOpenVDBReshape.h in Headers */ = {isa = PBXBuildFile; fileRef = 0584D4412174F3870078D479 /* C4DOpenVDBReshape.h */; };
 		05886E062169D72B001F9379 /* C4DOpenVDBFromPolygons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05886E042169D72B001F9379 /* C4DOpenVDBFromPolygons.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
 		05886E072169D72B001F9379 /* C4DOpenVDBFromPolygons.h in Headers */ = {isa = PBXBuildFile; fileRef = 05886E052169D72B001F9379 /* C4DOpenVDBFromPolygons.h */; };
 		05886E0A216F14FA001F9379 /* C4DOpenVDBSmooth.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 05886E08216F14FA001F9379 /* C4DOpenVDBSmooth.cpp */; settings = {COMPILER_FLAGS = "-fno-rtti -fno-exceptions"; }; };
@@ -64,6 +66,8 @@
 		054816132121E5FF0008ABDE /* C4DOpenVDBPrimitive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBPrimitive.cpp; path = source/C4DOpenVDBPrimitive.cpp; sourceTree = SOURCE_ROOT; };
 		054816142121E5FF0008ABDE /* C4DOpenVDBPrimitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBPrimitive.h; path = source/C4DOpenVDBPrimitive.h; sourceTree = SOURCE_ROOT; };
 		057C079020FB2000006A8F41 /* C4DOpenVDBObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBObject.cpp; path = source/C4DOpenVDBObject.cpp; sourceTree = SOURCE_ROOT; };
+		0584D43F2174F37E0078D479 /* C4DOpenVDBReshape.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBReshape.cpp; path = source/C4DOpenVDBReshape.cpp; sourceTree = SOURCE_ROOT; };
+		0584D4412174F3870078D479 /* C4DOpenVDBReshape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBReshape.h; path = source/C4DOpenVDBReshape.h; sourceTree = SOURCE_ROOT; };
 		05886E042169D72B001F9379 /* C4DOpenVDBFromPolygons.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBFromPolygons.cpp; path = source/C4DOpenVDBFromPolygons.cpp; sourceTree = SOURCE_ROOT; };
 		05886E052169D72B001F9379 /* C4DOpenVDBFromPolygons.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = C4DOpenVDBFromPolygons.h; path = source/C4DOpenVDBFromPolygons.h; sourceTree = SOURCE_ROOT; };
 		05886E08216F14FA001F9379 /* C4DOpenVDBSmooth.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = C4DOpenVDBSmooth.cpp; path = source/C4DOpenVDBSmooth.cpp; sourceTree = SOURCE_ROOT; };
@@ -158,6 +162,8 @@
 				05886E042169D72B001F9379 /* C4DOpenVDBFromPolygons.cpp */,
 				05886E09216F14FA001F9379 /* C4DOpenVDBSmooth.h */,
 				05886E08216F14FA001F9379 /* C4DOpenVDBSmooth.cpp */,
+				0584D4412174F3870078D479 /* C4DOpenVDBReshape.h */,
+				0584D43F2174F37E0078D479 /* C4DOpenVDBReshape.cpp */,
 			);
 			name = source;
 			path = ../source;
@@ -189,6 +195,7 @@
 				05886E072169D72B001F9379 /* C4DOpenVDBFromPolygons.h in Headers */,
 				05113031214CDDD500C2C578 /* C4DOpenVDBGenerator.h in Headers */,
 				05886E0B216F14FA001F9379 /* C4DOpenVDBSmooth.h in Headers */,
+				0584D4422174F3870078D479 /* C4DOpenVDBReshape.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -274,6 +281,7 @@
 				054816152121E5FF0008ABDE /* C4DOpenVDBPrimitive.cpp in Sources */,
 				059E91592137C4EF00472B23 /* C4DOpenVDBHelp.cpp in Sources */,
 				05A4BDCB2158B4E800BA66F9 /* C4DOpenVDBCombine.cpp in Sources */,
+				0584D4402174F37E0078D479 /* C4DOpenVDBReshape.cpp in Sources */,
 				05113030214CDDD500C2C578 /* C4DOpenVDBGenerator.cpp in Sources */,
 				059E915E213F5BE100472B23 /* C4DOpenVDBVisualizer.cpp in Sources */,
 				A0A6683339E921D362010000 /* main.cpp in Sources */,
