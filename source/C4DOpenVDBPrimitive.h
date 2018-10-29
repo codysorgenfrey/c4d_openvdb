@@ -22,7 +22,6 @@ public:
     virtual Bool GetDDescription(GeListNode* node, Description* description, DESCFLAGS_DESC& flags);
     virtual Bool GetDEnabling(GeListNode *node, const DescID &id, const GeData &t_data, DESCFLAGS_ENABLE flags, const BaseContainer *itemdesc);
     virtual BaseObject* GetVirtualObjects(BaseObject* op, HierarchyHelp* hh);
-    virtual void GetDimension (BaseObject* op, Vector * mp, Vector *rad);
 };
 
 #endif /* C4DOpenVDBPrimitive_h */

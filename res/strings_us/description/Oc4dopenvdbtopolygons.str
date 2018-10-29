@@ -1,0 +1,5 @@
+STRINGTABLE Oc4dopenvdbtopolygons {
+	Oc4dopenvdbtopolygons "VDB To Polygons";
+    C4DOPENVDB_TOPOLYGONS_ADAPT "Adaptivity";
+    C4DOPENVDB_TOPOLYGONS_ISO "Surface Iso";
+}

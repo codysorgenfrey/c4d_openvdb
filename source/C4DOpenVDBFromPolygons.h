@@ -22,5 +22,4 @@ public:
     virtual BaseObject* GetVirtualObjects(BaseObject* op, HierarchyHelp* hh);
 };
 
-
 #endif /* C4DOpenVDBFromPolygons_h */

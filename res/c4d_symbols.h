@@ -4,11 +4,12 @@ enum
     IDS_C4DOpenVDBPrimitive,
     IDS_C4DOpenVDBHelp,
     IDS_C4DOpenVDBVisualizer,
-    IDS_C4DOpenVDBMesher,
+    IDS_C4DOpenVDBToPolygons,
     IDS_C4DOpenVDBCombine,
     IDS_C4DOpenVDBFromPolygons,
     IDS_C4DOpenVDBSmooth,
     IDS_C4DOpenVDBReshape,
+    IDS_C4DOpenVDBFromParticles,
     
     C4DOPENVDB_SEPARATOR = 150,
     C4DOPENVDB_SURFACE_COUNT = 1000,

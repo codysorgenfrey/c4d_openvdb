@@ -348,6 +348,9 @@ Bool C4DOpenVDBObject::Init(GeListNode* node)
     if (!SUPER::Init(node))
         return false;
     
+    myMp = Vector(0);
+    myRad = Vector(0);
+    
     ClearSurface(this, false); // set up our new VDB surface
     
     node->SetParameter(DescLevel(C4DOPENVDB_DISPLAY_SHAPE), GeData(C4DOPENVDB_DISPLAY_SHAPE_SQUARE), DESCFLAGS_SET_0);
@@ -580,6 +583,12 @@ Bool C4DOpenVDBObject::GetDDescription(GeListNode* node, Description* descriptio
     }
     
     return SUPER::GetDDescription(node, description, flags);
+}
+
+void C4DOpenVDBObject::GetDimension(BaseObject *op, Vector *mp, Vector *rad)
+{
+    *mp = myMp;
+    *rad = myRad;
 }
 
 void C4DOpenVDBObject::UpdateVoxelCountUI(BaseObject *op)

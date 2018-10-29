@@ -27,12 +27,14 @@ public:
     Int32                                         surfaceCnt;
     Float                                         voxelSize;
     GlString                                      voxelSizeUni, vpSizeUni, projMatUni, userColorUni; //uniforms for opengl
+    Vector                                        myMp, myRad;
     
     static NodeData* Alloc(void) { return NewObjClear(C4DOpenVDBVisualizer); }
     virtual Bool Init(GeListNode* node);
     virtual void Free(GeListNode* node);
     virtual Bool Message(GeListNode* node, Int32 type, void* t_data);
     virtual BaseObject* GetVirtualObjects(BaseObject* op, HierarchyHelp* hh);
+    virtual void GetDimension(BaseObject *op, Vector *mp, Vector *rad);
     virtual DRAWRESULT 	Draw(BaseObject *op, DRAWPASS drawpass, BaseDraw *bd, BaseDrawHelp *bh);
 };
 

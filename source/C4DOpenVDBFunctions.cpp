@@ -21,8 +21,9 @@
 #include <openvdb/tools/LevelSetRebuild.h> // for doLevelSetRebuild
 #include <openvdb/util/CpuTimer.h> // for profiling
 #include <openvdb/tools/MeshToVolume.h> // for mesh to volume and MeshDataAdapter struct
-#include <openvdb/tools/LevelSetFilter.h> // for levelSetFilter
-#include <openvdb/tools/Filter.h> // for Filter
+#include <openvdb/tools/LevelSetFilter.h> // for FilterVDB
+#include <openvdb/tools/Filter.h> // for FilterVDB
+#include <openvdb/tools/ParticlesToLevelSet.h> // for VDBFromPoints
 
 using namespace openvdb;
 
@@ -282,6 +283,8 @@ Bool UpdateSurface(C4DOpenVDBObject *obj, BaseObject *op, Vector32 userColor)
     
     obj->UpdateVoxelCountUI(op);
     
+    GetVDBBBox(obj->helper, &obj->myMp, &obj->myRad);
+    
     return true;
 }
 
@@ -302,6 +305,26 @@ void ClearSurface(C4DOpenVDBObject *obj, Bool free)
     obj->isSlaveOfMaster = false;
     obj->UDF = false;
     obj->prevFacingVector = Vector(0);
+}
+
+void GetVDBBBox(VDBObjectHelper *helper, Vector *mp, Vector *rad)
+{
+    if (!helper->grid)
+        return;
+    
+    math::Transform xform = helper->grid->transform();
+    math::CoordBBox bbox = helper->grid->evalActiveVoxelBoundingBox();
+    
+    Vec3d center = xform.indexToWorld(bbox.getCenter());
+    Vec3d min = xform.indexToWorld(bbox.min());
+    Vec3d max = xform.indexToWorld(bbox.max());
+    
+    Float x = (max.x() - min.x()) / 2;
+    Float y = (max.y() - min.y()) / 2;
+    Float z = (max.z() - min.z()) / 2;
+    
+    *rad = Vector(x,y,z);
+    *mp = Vector(center.x(), center.y(), center.z());
 }
 
 Bool MakeShape(VDBObjectHelper *helper, Int32 shape, Float width, Vector center, Float voxelSize, Int32 bandWidth)
@@ -412,6 +435,8 @@ Bool UpdateVisualizerSlice(C4DOpenVDBObject *vdb, C4DOpenVDBVisualizer *vis, Int
 {
     if (!vdb->helper->grid) return false;
     
+    StatusSetText("Slicing VDB");
+    
     vis->voxelSize = vdb->helper->grid->voxelSize().x();
     
     util::PagedArray<VisualizerAttribs> attribsArray;
@@ -489,12 +514,11 @@ Bool GetVDBPolygonized(BaseObject *inObject, Float iso, Float adapt, BaseObject 
     
     gridCopy = vdb->helper->grid->deepCopy();
     
-    UpdateGridTransform(inObject->GetMl(), *gridCopy);
-    
     tools::volumeToMesh(*gridCopy, points, tris, quads, iso, adapt);
     
     // setup new poly obj
     polyObj = PolygonObject::Alloc(points.size(), (tris.size() + quads.size()));
+    polyObj->SetMl(inObject->GetMl());
     
     // set points
     pointsArr = polyObj->GetPointW();
@@ -516,13 +540,8 @@ Bool GetVDBPolygonized(BaseObject *inObject, Float iso, Float adapt, BaseObject 
         polyArr[x + quads.size()] = CPolygon(tris[x].z(), tris[x].y(), tris[x].x());
     }
     
-    BaseTag *phong = polyObj->MakeTag(Tphong);
-    if (!phong)
-        return false;
-    
-    phong->SetParameter(DescLevel(PHONGTAG_PHONG_ANGLELIMIT), GeData(true), DESCFLAGS_SET_0);
-    phong->SetParameter(DescLevel(PHONGTAG_PHONG_USEEDGES), GeData(true), DESCFLAGS_SET_0);
-    
+    polyObj->SetPhong(true, true, DegToRad(40.0f));
+    polyObj->Message(MSG_UPDATE); // update poly obj since point data changed.
     polyObj->InsertUnder(outObject);
     
     return true;
@@ -926,6 +945,111 @@ Bool FilterVDB(VDBObjectHelper *helper, C4DOpenVDBObject *obj, Int32 operation, 
             default: break;
         }
     }
+    
+    return true;
+}
+
+// This wrapper class is required by tools::ParticlesToLeveSet
+class ParticleList
+{
+private:
+    maxon::BaseArray<Vector> *pointList;
+    maxon::BaseArray<Float>  *radList;
+    maxon::BaseArray<Vector> *velList;
+    Float velScale;
+public:
+    // Required by @c openvdb::tools::PointPartitioner
+    typedef openvdb::Vec3R  PosType;
+    
+    ParticleList(maxon::BaseArray<Vector> *inPointList,
+                 maxon::BaseArray<Float> *inRadList,
+                 maxon::BaseArray<Vector> *inVelList,
+                 Float inVelScale)
+    {
+        pointList = inPointList;
+        radList = inRadList;
+        velList = inVelList;
+        velScale = inVelScale;
+    }
+    
+    // required by tools::ParticlesToLevelSet
+    size_t size() const { return size_t(pointList->GetCount()); }
+    
+    // Position of the particle in world space
+    // Required by ParticlesToLevelSet::rasterizeSpheres(*this, radius)
+    void getPos(size_t n, Vec3R &xyz) const
+    {
+        Vector wsPos = pointList->operator[](Int32(n));
+        xyz = Vec3R(wsPos.x, wsPos.y, wsPos.z);
+    }
+    
+    // Position and radius of the particle in world space
+    // Required by ParticlesToLevelSet::rasterizeSpheres(*this)
+    void getPosRad(size_t n, Vec3R &xyz, Real &rad) const
+    {
+        Vector wsPos = pointList->operator[](Int32(n));
+        xyz = Vec3R(wsPos.x, wsPos.y, wsPos.z);
+        rad = Real(radList->operator[](Int32(n)));
+    }
+    
+    // Position, radius, and velocity of the particle in world space
+    // Required by ParticlesToLevelSet::rasterizeTrails(*this)
+    void getPosRadVel(size_t n, Vec3R &xyz, Real &rad, Vec3R &vel) const
+    {
+        Vector wsPos = pointList->operator[](Int32(n));
+        Vector v = velList->operator[](Int32(n));
+        v = v.GetNormalized() * velScale;
+        xyz = Vec3R(wsPos.x, wsPos.y, wsPos.z);
+        rad = Real(radList->operator[](Int32(n)));
+        vel = Vec3R(v.x, v.y, v.z);
+    }
+};
+
+Bool VDBFromParticles(VDBObjectHelper *helper,
+                   maxon::BaseArray<Vector> *pointList,
+                   maxon::BaseArray<Float> *radList,
+                   maxon::BaseArray<Vector> *velList,
+                   Float voxelSize,
+                   Int32 bandWidth,
+                   Bool prune,
+                   Int32 shape,
+                   Float velMult,
+                   Float velSpace,
+                   Float minRadius)
+{
+    if (helper->grid)
+        helper->grid.reset();
+    
+    StatusSetText("Generating VDB");
+    
+    float bgValue = float(voxelSize * bandWidth); // formula for computing BG Values
+    helper->grid = FloatGrid::create(bgValue);
+    math::Transform::Ptr xform = math::Transform::createLinearTransform(voxelSize);
+    helper->grid->setTransform(xform);
+    helper->grid->setGridClass(GRID_LEVEL_SET);
+    tools::ParticlesToLevelSet<FloatGrid> ptls(*helper->grid);
+    
+    ptls.setRmin(minRadius);
+    
+    ParticleList particleList(pointList, radList, velList, velMult);
+    
+    if (shape == C4DOPENVDB_FROMPARTICLES_SHAPE_VEL)
+    {
+        if (velList->GetCount() == 0)
+            return false;
+        ptls.rasterizeTrails(particleList, velSpace);
+    }
+    else
+    {
+        ptls.rasterizeSpheres(particleList);
+    }
+    
+    ptls.finalize(prune);
+    
+    helper->grid->setName("surface");
+    helper->grid->insertMeta("Unsigned", BoolMetadata(false));
+    helper->grid->insertMeta("Int Band Width", FloatMetadata(bandWidth));
+    helper->grid->insertMeta("Ext Band Width", FloatMetadata(bandWidth));
     
     return true;
 }

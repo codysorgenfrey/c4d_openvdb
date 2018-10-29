@@ -14,12 +14,17 @@
 #include "Oc4dopenvdbprimitive.h" // Enum of ID number constants for UI elements
 #include "Oc4dopenvdbhelp.h" // Enum of ID number constants for UI elements
 #include "Oc4dopenvdbvisualizer.h" // Enum of ID number constants for UI elements
-#include "Oc4dopenvdbmesher.h" // Enum of ID number constants for UI elements
+#include "Oc4dopenvdbtopolygons.h" // Enum of ID number constants for UI elements
 #include "Oc4dopenvdbcombine.h" // Enum of ID number constants for UI elements
 #include "Oc4dopenvdbfrompolygons.h" // Enum of ID number constants for UI elements
 #include "Oc4dopenvdbsmooth.h" // Enum of ID number constants for UI elements
 #include "Oc4dopenvdbreshape.h" // Enum of ID number constants for UI elements
+#include "Oc4dopenvdbfromparticles.h" // Enum of ID number constants for UI elements
 #include "c4d_gl.h" //For drawing with OpenGL in c4d
+
+#define Omograph_matrix 1018545 // these might cause problems later
+#define Omograph_cloner 1018544 // these might cause problems later
+
 
 class C4DOpenVDBGenerator : public ObjectData
 {

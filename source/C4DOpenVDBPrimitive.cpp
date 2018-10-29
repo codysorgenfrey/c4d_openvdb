@@ -232,55 +232,6 @@ error:
     return nullptr;
 }
 
-void C4DOpenVDBPrimitive::GetDimension(BaseObject *op, Vector *mp, Vector *rad)
-{
-    *mp = op->GetMg().off;
-    
-    GeData myData;
-    Int32  primType;
-    Float  width;
-    op->GetParameter(DescLevel(C4DOPENVDB_PRIM_SETTINGS_TYPE), myData, DESCFLAGS_GET_0);
-    primType = myData.GetInt32();
-    
-    switch (primType) {
-        case C4DOPENVDB_PRIM_SETTINGS_TYPE_SPHERE:
-            op->GetParameter(DescLevel(C4DOPENVDB_SPHERE_SETTINGS_RADIUS), myData, DESCFLAGS_GET_0);
-            width = myData.GetFloat();
-            break;
-            
-        case C4DOPENVDB_PRIM_SETTINGS_TYPE_CUBE:
-            op->GetParameter(DescLevel(C4DOPENVDB_CUBE_SETTINGS_SIZE), myData, DESCFLAGS_GET_0);
-            width = myData.GetFloat() * 0.5;
-            break;
-            
-        case C4DOPENVDB_PRIM_SETTINGS_TYPE_DODEC:
-            op->GetParameter(DescLevel(C4DOPENVDB_DODEC_SETTINGS_SIZE), myData, DESCFLAGS_GET_0);
-            width = myData.GetFloat();
-            break;
-            
-        case C4DOPENVDB_PRIM_SETTINGS_TYPE_ICOS:
-            op->GetParameter(DescLevel(C4DOPENVDB_ICOS_SETTINGS_SIZE), myData, DESCFLAGS_GET_0);
-            width = myData.GetFloat();
-            break;
-            
-        case C4DOPENVDB_PRIM_SETTINGS_TYPE_OCT:
-            op->GetParameter(DescLevel(C4DOPENVDB_OCT_SETTINGS_SIZE), myData, DESCFLAGS_GET_0);
-            width = myData.GetFloat();
-            break;
-            
-        case C4DOPENVDB_PRIM_SETTINGS_TYPE_TET:
-            op->GetParameter(DescLevel(C4DOPENVDB_TET_SETTINGS_SIZE), myData, DESCFLAGS_GET_0);
-            width = myData.GetFloat();
-            break;
-            
-        default:
-            width = 100.0;
-            break;
-    }
-    
-    *rad = Vector(width);
-}
-
 static Bool C4DOpenVDBPrimitiveObjectHelpDelegate(const String& opType, const String& baseType, const String& group, const String& property)
 {
     // Make sure that your object type name is unique and only return true if this is really your object type name and you are able to present a decent help.

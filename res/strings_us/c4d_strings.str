@@ -6,11 +6,12 @@ STRINGTABLE
     IDS_C4DOpenVDBPrimitive "VDB Primitive";
     IDS_C4DOpenVDBHelp "VDB Help";
     IDS_C4DOpenVDBVisualizer "VDB Visualizer";
-    IDS_C4DOpenVDBMesher "VDB Mesher";
+    IDS_C4DOpenVDBToPolygons "VDB To Polygons";
     IDS_C4DOpenVDBCombine "VDB Combine";
     IDS_C4DOpenVDBFromPolygons "VDB From Polygons";
     IDS_C4DOpenVDBSmooth "VDB Smooth";
     IDS_C4DOpenVDBReshape "VDB Reshape";
+    IDS_C4DOpenVDBFromParticles "VDB From Particles";
     
     C4DOPENVDB_SURFACE_COUNT "Surface voxels: ";
     C4DOPENVDB_VOXEL_COUNT "Active voxels: ";

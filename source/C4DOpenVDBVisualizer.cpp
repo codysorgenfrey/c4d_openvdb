@@ -214,6 +214,8 @@ Bool C4DOpenVDBVisualizer::Init(GeListNode* node)
     sliceAttribs = nullptr;
     surfaceCnt = 0;
     voxelSize = 0.0;
+    myMp = Vector(0);
+    myRad = Vector(0);
     
     GeData mydata(CUSTOMDATATYPE_GRADIENT, DEFAULTVALUE);
     Gradient *grad = (Gradient*)mydata.GetCustomDataType(CUSTOMDATATYPE_GRADIENT);
@@ -379,13 +381,20 @@ BaseObject* C4DOpenVDBVisualizer::GetVirtualObjects(BaseObject* op, HierarchyHel
     op->GetParameter(DescLevel(C4DOPENVDB_VIS_COLOR), mydata, DESCFLAGS_GET_0);
     grad = (Gradient*)mydata.GetCustomDataType(CUSTOMDATATYPE_GRADIENT);
     
+    StatusSetSpin();
+    
     if (!grad->InitRender(irs))
         goto error;
     
     if (!UpdateVisualizerSlice(vdb, this, axis, offset, grad))
         goto error;
     
+    GetVDBBBox(vdb->helper, &myMp, &myRad);
+    myMp = inObject->GetMl() * (myMp);
+    
     grad->FreeRender();
+    
+    StatusClear();
     
     blDelete(hClone);
     
@@ -399,6 +408,12 @@ error:
     voxelSize = 0.0;
     DeleteMem(sliceAttribs);
     return nullptr;
+}
+
+void C4DOpenVDBVisualizer::GetDimension(BaseObject *op, Vector *mp, Vector *rad)
+{
+    *mp = myMp;
+    *rad = myRad;
 }
 
 DRAWRESULT C4DOpenVDBVisualizer::Draw(BaseObject *op, DRAWPASS drawpass, BaseDraw *bd, BaseDrawHelp *bh)

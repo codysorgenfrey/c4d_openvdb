@@ -32,7 +32,7 @@ public:
     Float                                         voxelSize;
     Bool                                          isSlaveOfMaster, UDF;
     String                                        gridName, gridType;
-    Vector                                        prevFacingVector;
+    Vector                                        prevFacingVector, myMp, myRad;
     GlString                                      voxelSizeUni, vpSizeUni, projMatUni, displayTypeUni, displayTypeFragUni, backFaceUni, userColorUni; //uniforms for opengl
     
     static NodeData* Alloc(void) { return NewObjClear(C4DOpenVDBObject); }
@@ -40,6 +40,7 @@ public:
     virtual void Free(GeListNode* node);
     virtual DRAWRESULT Draw(BaseObject *op, DRAWPASS drawpass, BaseDraw *bd, BaseDrawHelp *bh);
     virtual Bool GetDDescription(GeListNode* node, Description* description, DESCFLAGS_DESC& flags);
+    virtual void GetDimension(BaseObject *op, Vector *mp, Vector *rad);
     void UpdateVoxelCountUI(BaseObject *op);
 };
 

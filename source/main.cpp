@@ -9,11 +9,12 @@ Bool PluginStart(void)
     if (!RegisterC4DOpenVDBPrimitive()) return false;
     if (!RegisterC4DOpenVDBHelp()) return false;
     if (!RegisterC4DOpenVDBVisualizer()) return false;
-    if (!RegisterC4DOpenVDBMesher()) return false;
+    if (!RegisterC4DOpenVDBToPolygons()) return false;
     if (!RegisterC4DOpenVDBCombine()) return false;
     if (!RegisterC4DOpenVDBFromPolygons()) return false;
     if (!RegisterC4DOpenVDBSmooth()) return false;
     if (!RegisterC4DOpenVDBReshape()) return false;
+    if (!RegisterC4DOpenVDBFromParticles()) return false;
     return true;
 }
 
@@ -30,7 +31,13 @@ Bool PluginMessage(Int32 id, void* data)
 				return false;		// don't start plugin without resource
 
 			return true;
-
+            
+        case C4DPL_STARTACTIVITY:
+            if (!InitThinkingParticles())
+                return false;
+            
+            return true;
+            
 		case C4DMSG_PRIORITY:
 			//react to this message to set a plugin priority (to determine in which order plugins are initialized or loaded
 			return true;
