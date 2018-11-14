@@ -311,9 +311,10 @@ BaseObject* C4DOpenVDBFromParticles::GetVirtualObjects(BaseObject* op, Hierarchy
         goto error;
     
     if (!dirty)
+    {
+        blDelete(outObject);
         return op->GetCache();
-    
-    GePrint("dirty");
+    }
     
     op->GetParameter(DescLevel(C4DOPENVDB_FROMPARTICLES_VOXEL_SIZE), myData, DESCFLAGS_GET_0);
     voxelSize = myData.GetFloat();
@@ -400,7 +401,7 @@ Bool RegisterC4DOpenVDBFromParticles(void)
     
     return RegisterObjectPlugin(Oc4dopenvdbfromparticles,
                                 GeLoadString(IDS_C4DOpenVDBFromParticles),
-                                OBJECT_GENERATOR | OBJECT_INPUT | OBJECT_PARTICLEMODIFIER,
+                                OBJECT_GENERATOR | OBJECT_INPUT,
                                 C4DOpenVDBFromParticles::Alloc,
                                 "Oc4dopenvdbfromparticles",
                                 AutoBitmap("C4DOpenVDB.tiff"),
